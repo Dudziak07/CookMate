@@ -60,5 +60,6 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.annotation)
     implementation(libs.material)
+    implementation(libs.swiperefreshlayout)
 
 }

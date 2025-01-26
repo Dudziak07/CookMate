@@ -9,6 +9,8 @@ import androidx.appcompat.widget.SearchView; // Dodaj import SearchView
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
@@ -27,6 +29,22 @@ public class RecipesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipes);
+
+        // Znajdź SwipeRefreshLayout
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+
+        // Listener do odświeżania przez przeciągnięcie w dół
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
+                runOnUiThread(() -> {
+                    recipes.clear();
+                    recipes.addAll(dbRecipes);
+                    adapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false); // Zatrzymaj animację odświeżania
+                });
+            });
+        });
 
         // Znajdź RecyclerView
         recyclerView = findViewById(R.id.recipes_recycler_view);
@@ -111,6 +129,19 @@ public class RecipesActivity extends AppCompatActivity {
             Intent intent = new Intent(this, AddRecipeActivity.class);
             startActivity(intent);
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Odśwież listę przepisów
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
+            runOnUiThread(() -> {
+                recipes.clear();
+                recipes.addAll(dbRecipes);
+                adapter.notifyDataSetChanged();
+            });
+        });
     }
 }

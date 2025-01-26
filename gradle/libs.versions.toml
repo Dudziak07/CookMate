@@ -16,6 +16,7 @@ playServicesBase = "18.5.0"
 roomRuntime = "2.6.1"
 ksp = "2.0.21-1.0.27"
 room = "2.6.1"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -35,6 +36,7 @@ play-services-base = { module = "com.google.android.gms:play-services-base", ver
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
