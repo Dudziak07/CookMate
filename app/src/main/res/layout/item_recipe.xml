@@ -4,8 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    android:backgroundTint="@color/white"
+    android:foreground="?attr/selectableItemBackground">
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,5 +43,14 @@
             android:textSize="14sp"
             android:textColor="#757575"
             android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/recipe_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#obiad #szybki"
+            android:textSize="12sp"
+            android:textColor="#757575" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

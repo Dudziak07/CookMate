@@ -1,14 +1,21 @@
 package com.example.cookmate.view;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.cookmate.R;
-import com.example.cookmate.model.Recipe;
+import com.example.cookmate.database.Recipe;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeViewHolder> {
@@ -30,13 +37,34 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     public void onBindViewHolder(@NonNull RecipeViewHolder holder, int position) {
         Recipe recipe = recipes.get(position);
         holder.nameTextView.setText(recipe.getName());
-        holder.timeTextView.setText(recipe.getPreparationTime());
-        holder.imageView.setImageResource(recipe.getImageResourceId());
+        holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
+
+        Glide.with(holder.imageView.getContext())
+                .load(recipe.getImageResourceId())
+                .placeholder(R.drawable.ic_placeholder)
+                .into(holder.imageView);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), RecipeDetailsActivity.class);
+            intent.putExtra("RECIPE_ID", recipe.getId());
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override
     public int getItemCount() {
         return recipes.size();
+    }
+
+    public void filter(String text) {
+        List<Recipe> filteredList = new ArrayList<>();
+        for (Recipe recipe : recipes) {
+            if (recipe.getName().toLowerCase().contains(text.toLowerCase())) {
+                filteredList.add(recipe);
+            }
+        }
+        this.recipes = filteredList;
+        notifyDataSetChanged();
     }
 
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {

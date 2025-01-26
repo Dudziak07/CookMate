@@ -51,4 +51,9 @@ dependencies {
     ksp(libs.compiler)
 
     implementation(libs.cardview)
+    implementation(libs.play.services.base) // lub najnowsza wersja
+    implementation(libs.appcompat.v161)
+    implementation(libs.annotation)
+
+
 }
