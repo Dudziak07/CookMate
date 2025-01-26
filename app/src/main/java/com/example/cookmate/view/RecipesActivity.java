@@ -1,7 +1,9 @@
 package com.example.cookmate.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.widget.SearchView; // Dodaj import SearchView
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,21 +71,46 @@ public class RecipesActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    // Przywracanie wszystkich przepisów, jeśli pole wyszukiwania jest puste
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        List<Recipe> dbRecipes = AppDatabase.getInstance(RecipesActivity.this).recipeDao().getAllRecipes();
-                        runOnUiThread(() -> {
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    List<Recipe> dbRecipes = AppDatabase.getInstance(RecipesActivity.this).recipeDao().getAllRecipes();
+                    runOnUiThread(() -> {
+                        if (newText.isEmpty()) {
+                            // Przywróć wszystkie przepisy
                             recipes.clear();
                             recipes.addAll(dbRecipes);
-                            adapter.notifyDataSetChanged();
-                        });
+                        } else {
+                            // Filtruj przepisy
+                            List<Recipe> filteredList = new ArrayList<>();
+                            for (Recipe recipe : dbRecipes) {
+                                if (recipe.getName().toLowerCase().contains(newText.toLowerCase())) {
+                                    filteredList.add(recipe);
+                                }
+                            }
+                            recipes.clear();
+                            recipes.addAll(filteredList);
+                        }
+                        adapter.notifyDataSetChanged();
                     });
-                } else {
-                    adapter.filter(newText);
-                }
+                });
                 return true;
             }
         });
+
+        FloatingActionButton fabMain = findViewById(R.id.fab_main);
+        FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+
+        fabMain.setOnClickListener(v -> {
+            if (fabAddRecipe.getVisibility() == View.GONE) {
+                fabAddRecipe.setVisibility(View.VISIBLE);
+            } else {
+                fabAddRecipe.setVisibility(View.GONE);
+            }
+        });
+
+        fabAddRecipe.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddRecipeActivity.class);
+            startActivity(intent);
+        });
+
     }
 }

@@ -57,6 +57,8 @@ dependencies {
 
     implementation(libs.cardview)
     implementation(libs.play.services.base) // lub najnowsza wersja
-    implementation(libs.appcompat.v161)
+    implementation(libs.appcompat)
     implementation(libs.annotation)
+    implementation(libs.material)
+
 }
