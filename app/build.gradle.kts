@@ -49,4 +49,6 @@ dependencies {
     // Glide (do obsługi obrazów)
     implementation(libs.glide)
     ksp(libs.compiler)
+
+    implementation(libs.cardview)
 }

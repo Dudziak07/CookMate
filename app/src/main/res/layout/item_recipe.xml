@@ -1,0 +1,44 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- Obrazek przepisu -->
+        <ImageView
+            android:id="@+id/recipe_image"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder" />
+
+        <!-- Nazwa przepisu -->
+        <TextView
+            android:id="@+id/recipe_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Przepis"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp" />
+
+        <!-- Czas przygotowania -->
+        <TextView
+            android:id="@+id/recipe_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 minut"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
