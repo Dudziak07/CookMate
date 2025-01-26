@@ -94,24 +94,14 @@ public class RecipesActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         Executors.newSingleThreadExecutor().execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(this);
-            if (db.recipeDao().getAllRecipes().isEmpty()) {
-                Recipe recipe1 = new Recipe("Chlebek bananowy", 30, "Pyszny chlebek z bananami", R.drawable.ic_placeholder);
-                Recipe recipe2 = new Recipe("Makaron ze szpinakiem", 20, "Szybkie i zdrowe danie", R.drawable.ic_placeholder);
-
-                // Logowanie przed wstawieniem
-                Log.d("RecipeDebug", "Inserting recipe1: " + recipe1);
-                Log.d("RecipeDebug", "Inserting recipe2: " + recipe2);
-
-                db.recipeDao().insertRecipe(recipe1);
-                db.recipeDao().insertRecipe(recipe2);
+            List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
+            Log.d("RecipesActivity", "Loaded recipes: " + dbRecipes.size());
+            for (Recipe recipe : dbRecipes) {
+                Log.d("RecipesActivity", "Recipe: " + recipe.getName() + ", Tag: " + recipe.getTag());
             }
-
-            // Pobierz dane z bazy i zaktualizuj adapter
-            List<Recipe> loadedRecipes = db.recipeDao().getAllRecipes();
             runOnUiThread(() -> {
                 recipes.clear();
-                recipes.addAll(loadedRecipes);
+                recipes.addAll(dbRecipes);
                 adapter.notifyDataSetChanged();
             });
         });
@@ -169,7 +159,15 @@ public class RecipesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        closeFab(); // Użyj metody closeFab
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
+            runOnUiThread(() -> {
+                recipes.clear();
+                recipes.addAll(dbRecipes);
+                adapter.notifyDataSetChanged();
+            });
+        });
+        closeFab(); // Upewnij się, że FAB jest zamknięty
     }
 
     @Override

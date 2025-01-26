@@ -45,12 +45,13 @@
             android:layout_marginTop="4dp" />
 
         <TextView
-            android:id="@+id/recipe_tags"
+            android:id="@+id/recipe_tag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="#obiad #szybki"
+            android:layout_marginTop="4dp"
             android:textSize="12sp"
-            android:textColor="#757575" />
+            android:textColor="@color/black"
+            android:visibility="gone" /> <!-- Ukryte domyślnie -->
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

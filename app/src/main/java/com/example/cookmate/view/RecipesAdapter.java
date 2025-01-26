@@ -42,23 +42,26 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     @Override
     public void onBindViewHolder(@NonNull RecipeViewHolder holder, int position) {
         Recipe recipe = recipes.get(position);
-        holder.nameTextView.setText(recipe.getName());
-        holder.timeTextView.setText(recipe.getPreparationTime() + " minut"); // Dodanie "minut"
+        Log.d("RecipesAdapter", "Displaying recipe: " + recipe.getName() + ", Tag: " + recipe.getTag());
+        holder.nameTextView.setText(recipe.getName() != null ? recipe.getName() : "Brak nazwy");
+        holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
+
+        // Sprawdź, czy tag istnieje
+        if (recipe.getTag() != null && !recipe.getTag().isEmpty()) {
+            holder.tagTextView.setText("#" + recipe.getTag());
+            holder.tagTextView.setVisibility(View.VISIBLE);
+        } else {
+            holder.tagTextView.setVisibility(View.GONE); // Ukryj tag
+        }
+
         Glide.with(holder.imageView.getContext())
                 .load(recipe.getImageResourceId())
                 .placeholder(R.drawable.ic_placeholder)
                 .into(holder.imageView);
 
         holder.itemView.setOnClickListener(v -> {
-            Log.d("RecipesAdapter", "Clicked recipe ID: " + recipe.getId());
-            Intent intent = new Intent(v.getContext(), RecipeDetailsActivity.class);
-            intent.putExtra("RECIPE_ID", recipe.getId());
-            v.getContext().startActivity(intent);
-        });
-
-        holder.itemView.setOnClickListener(v -> {
             if (context instanceof RecipesActivity) {
-                ((RecipesActivity) context).closeFab(); // Wywołanie metody zamykającej FAB
+                ((RecipesActivity) context).closeFab();
             }
             Intent intent = new Intent(context, RecipeDetailsActivity.class);
             intent.putExtra("RECIPE_ID", recipe.getId());
@@ -73,11 +76,14 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
 
     public void filter(String text) {
         if (text.isEmpty()) {
-            recipes = new ArrayList<>(originalRecipes); // Przywracanie oryginalnej listy
+            // Przywracaj pełną listę, niezależnie od tagów
+            recipes = new ArrayList<>(originalRecipes);
         } else {
             List<Recipe> filteredList = new ArrayList<>();
             for (Recipe recipe : originalRecipes) {
-                if (recipe.getName().toLowerCase().contains(text.toLowerCase())) {
+                // Sprawdź, czy nazwa lub tag pasują do tekstu wyszukiwania
+                if ((recipe.getName() != null && recipe.getName().toLowerCase().contains(text.toLowerCase())) ||
+                        (recipe.getTag() != null && recipe.getTag().toLowerCase().contains(text.toLowerCase()))) {
                     filteredList.add(recipe);
                 }
             }
@@ -89,12 +95,14 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         TextView timeTextView;
+        TextView tagTextView; // Dodano tagTextView
         ImageView imageView;
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.recipe_name);
             timeTextView = itemView.findViewById(R.id.recipe_time);
+            tagTextView = itemView.findViewById(R.id.recipe_tag); // Inicjalizacja tagTextView
             imageView = itemView.findViewById(R.id.recipe_image);
         }
     }

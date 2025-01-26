@@ -1,5 +1,6 @@
 package com.example.cookmate.database;
 
+import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -11,19 +12,21 @@ public class Recipe {
     private int preparationTime; // int zamiast String
     private String description = "";
     private int imageResourceId; // dla obrazów
-    private String tags; // Przechowujemy tagi jako String
+
+    @Nullable
+    private String tag; // Jeden tag dla przepisu
 
     // Konstruktor bezargumentowy (wymagany przez Room)
     public Recipe() {
     }
 
     // Konstruktor
-    public Recipe(String name, int preparationTime, String description, int imageResourceId) {
+    public Recipe(String name, int preparationTime, String description, int imageResourceId, String tag) {
         this.name = name != null ? name : "Brak nazwy";
         this.preparationTime = preparationTime;
         this.description = description != null ? description : "Brak opisu";
         this.imageResourceId = imageResourceId;
-        this.tags = ""; // Ustawienie wartości domyślnej
+        this.tag = tag != null && !tag.isEmpty() ? tag : null; // Jeśli brak tagu, ustaw na null
     }
 
     // Gettery i settery
@@ -67,11 +70,11 @@ public class Recipe {
         this.imageResourceId = imageResourceId;
     }
 
-    public String getTags() {
-        return tags;
+    public String getTag() {
+        return tag;
     }
 
-    public void setTags(String tags) {
-        this.tags = tags;
+    public void setTag(@Nullable String tag) {
+        this.tag = tag;
     }
 }
