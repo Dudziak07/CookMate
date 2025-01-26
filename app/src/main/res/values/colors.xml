@@ -4,5 +4,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="purple_500">#6200EE</color>
+    <color name="primary_buttons">#2A9D8F</color>
+    <color name="primary1">#DFFFE6</color>
 
 </resources>

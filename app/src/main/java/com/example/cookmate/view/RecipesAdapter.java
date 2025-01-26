@@ -1,5 +1,6 @@
 package com.example.cookmate.view;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,8 +23,10 @@ import java.util.List;
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeViewHolder> {
     private List<Recipe> recipes;
     private List<Recipe> originalRecipes;
+    private Context context;
 
-    public RecipesAdapter(List<Recipe> recipes) {
+    public RecipesAdapter(Context context, List<Recipe> recipes) {
+        this.context = context;
         this.recipes = recipes;
         this.originalRecipes = new ArrayList<>(recipes);
     }
@@ -51,6 +54,15 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
             Intent intent = new Intent(v.getContext(), RecipeDetailsActivity.class);
             intent.putExtra("RECIPE_ID", recipe.getId());
             v.getContext().startActivity(intent);
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (context instanceof RecipesActivity) {
+                ((RecipesActivity) context).closeFab(); // Wywołanie metody zamykającej FAB
+            }
+            Intent intent = new Intent(context, RecipeDetailsActivity.class);
+            intent.putExtra("RECIPE_ID", recipe.getId());
+            context.startActivity(intent);
         });
     }
 

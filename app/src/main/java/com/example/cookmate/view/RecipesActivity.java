@@ -3,8 +3,10 @@ package com.example.cookmate.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView; // Dodaj import SearchView
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -24,11 +26,45 @@ public class RecipesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecipesAdapter adapter;
     private List<Recipe> recipes;
+    private boolean isFabOpen = false; // Śledzi, czy FAB jest otwarty
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipes);
+
+        // Znajdź elementy FAB
+        FloatingActionButton fabMain = findViewById(R.id.fab_main);
+        FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+
+        // Listener głównego przycisku hamburgera
+        fabMain.setOnClickListener(v -> {
+            if (isFabOpen) {
+                // Zamknij FAB i zmień ikonę na burger_menu
+                fabAddRecipe.setVisibility(View.GONE);
+                fabMain.setImageResource(R.drawable.burger_menu); // Ustaw ikonę burger_menu
+                isFabOpen = false;
+            } else {
+                // Otwórz FAB i zmień ikonę na cross
+                fabAddRecipe.setVisibility(View.VISIBLE);
+                fabMain.setImageResource(R.drawable.cross); // Ustaw ikonę cross
+                isFabOpen = true;
+            }
+        });
+
+        // Obsługa kliknięć poza przyciskami
+        View mainLayout = findViewById(R.id.main_layout); // Zmieniamy ID głównego layoutu
+        mainLayout.setOnClickListener(v -> {
+            if (fabAddRecipe.getVisibility() == View.VISIBLE) {
+                fabAddRecipe.setVisibility(View.GONE); // Zamknij menu
+            }
+        });
+
+        // Listener przycisku dodawania przepisu
+        fabAddRecipe.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddRecipeActivity.class);
+            startActivityForResult(intent, 1);
+        });
 
         // Znajdź SwipeRefreshLayout
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -42,6 +78,11 @@ public class RecipesActivity extends AppCompatActivity {
                     recipes.addAll(dbRecipes);
                     adapter.notifyDataSetChanged();
                     swipeRefreshLayout.setRefreshing(false); // Zatrzymaj animację odświeżania
+
+                    // Zamknij FAB i zmień ikonę
+                    fabAddRecipe.setVisibility(View.GONE);
+                    fabMain.setImageResource(R.drawable.burger_menu);
+                    isFabOpen = false;
                 });
             });
         });
@@ -53,7 +94,7 @@ public class RecipesActivity extends AppCompatActivity {
 
         // Inicjalizacja listy przepisów
         recipes = new ArrayList<>();
-        adapter = new RecipesAdapter(recipes);
+        adapter = new RecipesAdapter(this, recipes);
         recyclerView.setAdapter(adapter);
 
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -114,20 +155,18 @@ public class RecipesActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton fabMain = findViewById(R.id.fab_main);
-        FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
-
-        fabMain.setOnClickListener(v -> {
-            if (fabAddRecipe.getVisibility() == View.GONE) {
-                fabAddRecipe.setVisibility(View.VISIBLE);
-            } else {
-                fabAddRecipe.setVisibility(View.GONE);
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                closeFab(); // Zamknij rozwinięty FAB
             }
         });
 
-        fabAddRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddRecipeActivity.class);
-            startActivity(intent);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                closeFab(); // Zamknij rozwinięty FAB
+            }
         });
     }
 
@@ -143,5 +182,36 @@ public class RecipesActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             });
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // Odśwież listę przepisów
+            Executors.newSingleThreadExecutor().execute(() -> {
+                List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
+                runOnUiThread(() -> {
+                    recipes.clear();
+                    recipes.addAll(dbRecipes);
+                    adapter.notifyDataSetChanged();
+                });
+            });
+
+            // Zamknij hamburger, jeśli jest otwarty
+            FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+            fabAddRecipe.setVisibility(View.GONE);
+        }
+    }
+
+    public void closeFab() {
+        FloatingActionButton fabMain = findViewById(R.id.fab_main);
+        FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+        if (isFabOpen) {
+            fabAddRecipe.setVisibility(View.GONE);
+            fabMain.setImageResource(R.drawable.burger_menu); // Zmień ikonę na burger_menu
+            isFabOpen = false;
+        }
     }
 }

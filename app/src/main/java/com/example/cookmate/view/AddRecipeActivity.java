@@ -41,6 +41,9 @@ public class AddRecipeActivity extends AppCompatActivity {
             });
 
             Toast.makeText(this, "Przepis zapisany!", Toast.LENGTH_SHORT).show();
+
+            // Ustaw wynik OK i zakończ aktywność
+            setResult(RESULT_OK);
             finish();
         });
     }
