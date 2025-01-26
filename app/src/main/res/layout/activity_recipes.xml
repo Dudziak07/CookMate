@@ -14,18 +14,60 @@
         android:clickable="true"
         android:focusable="true">
 
-        <!-- Pasek wyszukiwania -->
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/search_view"
+        <!-- Pasek nawigacyjny -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/navbar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@color/primary1"
-            android:iconifiedByDefault="false"
-            android:queryHint="Szukaj przepisów..."
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_margin="8dp" />
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Logo CookMate -->
+            <ImageView
+                android:id="@+id/logo_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/cookmate_logo"
+                android:contentDescription="Logo CookMate"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Tekst CookMate -->
+            <TextView
+                android:id="@+id/cookmate_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:fontFamily="@font/playfair"
+                android:textSize="24sp"
+                app:layout_constraintStart_toEndOf="@id/logo_image"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="4dp" />
+
+            <!-- Pasek wyszukiwania -->
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:background="@color/gray85"
+                android:iconifiedByDefault="false"
+                android:queryHint="Szukaj:"
+                app:layout_constraintStart_toEndOf="@id/cookmate_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- RecyclerView do wyświetlania przepisów -->
         <androidx.recyclerview.widget.RecyclerView
@@ -33,7 +75,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:padding="8dp"
-            app:layout_constraintTop_toBottomOf="@id/search_view"
+            app:layout_constraintTop_toBottomOf="@id/navbar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

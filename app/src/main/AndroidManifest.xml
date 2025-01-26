@@ -23,6 +23,10 @@
         </activity>
         <activity android:name=".view.AddRecipeActivity" />
         <activity android:name=".view.RecipeDetailsActivity" />
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>
