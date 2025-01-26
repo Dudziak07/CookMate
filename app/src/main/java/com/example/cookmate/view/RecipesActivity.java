@@ -54,11 +54,7 @@ public class RecipesActivity extends AppCompatActivity {
 
         // Obsługa kliknięć poza przyciskami
         View mainLayout = findViewById(R.id.main_layout); // Zmieniamy ID głównego layoutu
-        mainLayout.setOnClickListener(v -> {
-            if (fabAddRecipe.getVisibility() == View.VISIBLE) {
-                fabAddRecipe.setVisibility(View.GONE); // Zamknij menu
-            }
-        });
+        mainLayout.setOnClickListener(v -> closeFab());
 
         // Listener przycisku dodawania przepisu
         fabAddRecipe.setOnClickListener(v -> {
@@ -173,15 +169,7 @@ public class RecipesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Odśwież listę przepisów
-        Executors.newSingleThreadExecutor().execute(() -> {
-            List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
-            runOnUiThread(() -> {
-                recipes.clear();
-                recipes.addAll(dbRecipes);
-                adapter.notifyDataSetChanged();
-            });
-        });
+        closeFab(); // Użyj metody closeFab
     }
 
     @Override
