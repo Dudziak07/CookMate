@@ -9,6 +9,10 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        plugins {
+            kotlin("android") version "1.8.0"
+            kotlin("kapt") version "1.8.0" // Upewnij się, że wersja jest poprawna
+        }
     }
 }
 dependencyResolutionManagement {
@@ -16,6 +20,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://jitpack.io")
+        }
     }
 }
 

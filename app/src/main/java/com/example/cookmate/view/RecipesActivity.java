@@ -1,15 +1,19 @@
 package com.example.cookmate.view;
 
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.appcompat.widget.SearchView; // Dodaj import SearchView
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.cookmate.R;
+import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class RecipesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -26,14 +30,33 @@ public class RecipesActivity extends AppCompatActivity {
         int spanCount = getResources().getConfiguration().screenWidthDp > 600 ? 3 : 2;
         recyclerView.setLayoutManager(new GridLayoutManager(this, spanCount));
 
-        // Inicjalizacja listy przepisów (dla testów można wstawić dane na sztywno)
+        // Inicjalizacja listy przepisów
         recipes = new ArrayList<>();
-        recipes.add(new Recipe("Chlebek bananowy", "30 minut", "Pyszny chlebek z bananów", R.drawable.ic_placeholder));
-        recipes.add(new Recipe("Makaron ze szpinakiem", "20 minut", "Szybkie i zdrowe danie", R.drawable.ic_placeholder));
-
-        // Ustaw Adapter
         adapter = new RecipesAdapter(recipes);
         recyclerView.setAdapter(adapter);
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            AppDatabase db = AppDatabase.getInstance(this);
+            if (db.recipeDao().getAllRecipes().isEmpty()) {
+                Recipe recipe1 = new Recipe("Chlebek bananowy", 30, "Pyszny chlebek z bananami", R.drawable.ic_placeholder);
+                Recipe recipe2 = new Recipe("Makaron ze szpinakiem", 20, "Szybkie i zdrowe danie", R.drawable.ic_placeholder);
+
+                // Logowanie przed wstawieniem
+                Log.d("RecipeDebug", "Inserting recipe1: " + recipe1);
+                Log.d("RecipeDebug", "Inserting recipe2: " + recipe2);
+
+                db.recipeDao().insertRecipe(recipe1);
+                db.recipeDao().insertRecipe(recipe2);
+            }
+
+            // Pobierz dane z bazy i zaktualizuj adapter
+            List<Recipe> loadedRecipes = db.recipeDao().getAllRecipes();
+            runOnUiThread(() -> {
+                recipes.clear();
+                recipes.addAll(loadedRecipes);
+                adapter.notifyDataSetChanged();
+            });
+        });
 
         // Listener dla SearchView
         SearchView searchView = findViewById(R.id.search_view);
@@ -45,10 +68,21 @@ public class RecipesActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.filter(newText);
+                if (newText.isEmpty()) {
+                    // Przywracanie wszystkich przepisów, jeśli pole wyszukiwania jest puste
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        List<Recipe> dbRecipes = AppDatabase.getInstance(RecipesActivity.this).recipeDao().getAllRecipes();
+                        runOnUiThread(() -> {
+                            recipes.clear();
+                            recipes.addAll(dbRecipes);
+                            adapter.notifyDataSetChanged();
+                        });
+                    });
+                } else {
+                    adapter.filter(newText);
+                }
                 return true;
             }
         });
-
     }
 }

@@ -11,6 +11,8 @@ import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
 
+import java.util.concurrent.Executors;
+
 public class AddRecipeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +26,19 @@ public class AddRecipeActivity extends AppCompatActivity {
 
         saveButton.setOnClickListener(v -> {
             String name = nameInput.getText().toString();
-            String time = timeInput.getText().toString();
             String description = descriptionInput.getText().toString();
+            int time;
+            try {
+                time = Integer.parseInt(timeInput.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Podaj prawidłowy czas przygotowania!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             Recipe recipe = new Recipe(name, time, description, R.drawable.ic_placeholder);
-            AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+            Executors.newSingleThreadExecutor().execute(() -> {
+                AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+            });
 
             Toast.makeText(this, "Przepis zapisany!", Toast.LENGTH_SHORT).show();
             finish();

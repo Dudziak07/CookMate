@@ -13,7 +13,7 @@ activity = "1.10.0"
 constraintlayout = "2.2.0"
 playServicesBase = "18.5.0"
 roomRuntime = "2.6.1"
-ksp = "1.9.0-1.0.11"
+ksp = "2.0.21-1.0.27"
 room = "2.6.1"
 
 [libraries]
@@ -30,9 +30,11 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }  # Dodaj ten wiersz
+kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.0.21" }

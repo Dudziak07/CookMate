@@ -1,6 +1,7 @@
 package com.example.cookmate.view;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,14 +40,14 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     public void onBindViewHolder(@NonNull RecipeViewHolder holder, int position) {
         Recipe recipe = recipes.get(position);
         holder.nameTextView.setText(recipe.getName());
-        holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
-
+        holder.timeTextView.setText(recipe.getPreparationTime() + " minut"); // Dodanie "minut"
         Glide.with(holder.imageView.getContext())
                 .load(recipe.getImageResourceId())
                 .placeholder(R.drawable.ic_placeholder)
                 .into(holder.imageView);
 
         holder.itemView.setOnClickListener(v -> {
+            Log.d("RecipesAdapter", "Clicked recipe ID: " + recipe.getId());
             Intent intent = new Intent(v.getContext(), RecipeDetailsActivity.class);
             intent.putExtra("RECIPE_ID", recipe.getId());
             v.getContext().startActivity(intent);

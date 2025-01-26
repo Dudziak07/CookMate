@@ -9,6 +9,7 @@
         android:id="@+id/recipe_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Nazwa przepisu"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -16,13 +17,13 @@
         android:id="@+id/recipe_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="#757575" />
+        android:text="Czas przygotowania"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/recipe_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp" />
+        android:text="Opis przepisu"
+        android:layout_marginTop="8dp" />
 </LinearLayout>

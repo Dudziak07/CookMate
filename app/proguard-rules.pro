@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Room - zachowaj klasy i metody
+-keep class androidx.room.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }
+-keep @androidx.room.Database class * { *; }
+
+# Zachowanie numerów linii dla debugowania
+-keepattributes SourceFile,LineNumberTable

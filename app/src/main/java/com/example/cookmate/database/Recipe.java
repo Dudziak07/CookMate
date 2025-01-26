@@ -3,24 +3,27 @@ package com.example.cookmate.database;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import java.util.List;
-
 @Entity
 public class Recipe {
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String name;
-    private String preparationTime;
-    private String description;
+    private int preparationTime; // int zamiast String
+    private String description = "";
     private int imageResourceId; // dla obrazów
-    private List<String> tags; // opcjonalne tagi
+    private String tags; // Przechowujemy tagi jako String
+
+    // Konstruktor bezargumentowy (wymagany przez Room)
+    public Recipe() {
+    }
 
     // Konstruktor
-    public Recipe(String name, String preparationTime, String description, int imageResourceId) {
-        this.name = name;
+    public Recipe(String name, int preparationTime, String description, int imageResourceId) {
+        this.name = name != null ? name : "Brak nazwy";
         this.preparationTime = preparationTime;
-        this.description = description;
+        this.description = description != null ? description : "Brak opisu";
         this.imageResourceId = imageResourceId;
+        this.tags = ""; // Ustawienie wartości domyślnej
     }
 
     // Gettery i settery
@@ -37,14 +40,14 @@ public class Recipe {
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name = name != null ? name : "Brak nazwy";
     }
 
-    public String getPreparationTime() {
+    public int getPreparationTime() {
         return preparationTime;
     }
 
-    public void setPreparationTime(String preparationTime) {
+    public void setPreparationTime(int preparationTime) {
         this.preparationTime = preparationTime;
     }
 
@@ -53,7 +56,7 @@ public class Recipe {
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = description != null ? description : "Brak opisu";
     }
 
     public int getImageResourceId() {
@@ -64,11 +67,11 @@ public class Recipe {
         this.imageResourceId = imageResourceId;
     }
 
-    public List<String> getTags() {
+    public String getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(String tags) {
         this.tags = tags;
     }
 }

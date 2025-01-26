@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp) // Plugin KSP, dodany w libs.versions.toml
 }
 
@@ -30,6 +31,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = "11" // Zmieniono na 1.8 zamiast 11
+    }
 }
 
 dependencies {
@@ -44,6 +48,7 @@ dependencies {
 
     // Room (baza danych)
     implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
     // Glide (do obsługi obrazów)
@@ -54,6 +59,4 @@ dependencies {
     implementation(libs.play.services.base) // lub najnowsza wersja
     implementation(libs.appcompat.v161)
     implementation(libs.annotation)
-
-
 }
