@@ -20,9 +20,11 @@ import java.util.List;
 
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeViewHolder> {
     private List<Recipe> recipes;
+    private List<Recipe> originalRecipes;
 
     public RecipesAdapter(List<Recipe> recipes) {
         this.recipes = recipes;
+        this.originalRecipes = new ArrayList<>(recipes);
     }
 
     @NonNull
@@ -57,13 +59,17 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     }
 
     public void filter(String text) {
-        List<Recipe> filteredList = new ArrayList<>();
-        for (Recipe recipe : recipes) {
-            if (recipe.getName().toLowerCase().contains(text.toLowerCase())) {
-                filteredList.add(recipe);
+        if (text.isEmpty()) {
+            recipes = new ArrayList<>(originalRecipes); // Przywracanie oryginalnej listy
+        } else {
+            List<Recipe> filteredList = new ArrayList<>();
+            for (Recipe recipe : originalRecipes) {
+                if (recipe.getName().toLowerCase().contains(text.toLowerCase())) {
+                    filteredList.add(recipe);
+                }
             }
+            recipes = filteredList;
         }
-        this.recipes = filteredList;
         notifyDataSetChanged();
     }
 

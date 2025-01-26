@@ -26,9 +26,6 @@ public class RecipesActivity extends AppCompatActivity {
         int spanCount = getResources().getConfiguration().screenWidthDp > 600 ? 3 : 2;
         recyclerView.setLayoutManager(new GridLayoutManager(this, spanCount));
 
-        // Znajdź SearchView
-        SearchView searchView = findViewById(R.id.search_view);
-
         // Inicjalizacja listy przepisów (dla testów można wstawić dane na sztywno)
         recipes = new ArrayList<>();
         recipes.add(new Recipe("Chlebek bananowy", "30 minut", "Pyszny chlebek z bananów", R.drawable.ic_placeholder));
@@ -39,17 +36,19 @@ public class RecipesActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // Listener dla SearchView
+        SearchView searchView = findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false; // Ignoruj submit
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.filter(newText); // Filtrowanie w adapterze
+                adapter.filter(newText);
                 return true;
             }
         });
+
     }
 }
