@@ -50,7 +50,14 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
                 ", ImageResourceId: " + recipe.getImageResourceId() + ", Tag: " + recipe.getTag());
 
         holder.nameTextView.setText(recipe.getName() != null ? recipe.getName() : "Brak nazwy");
-        holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
+
+        // Wyświetl czas przygotowania lub ukryj TextView, jeśli preparationTime jest null
+        if (recipe.getPreparationTime() != null) {
+            holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
+            holder.timeTextView.setVisibility(View.VISIBLE);
+        } else {
+            holder.timeTextView.setVisibility(View.GONE);
+        }
 
         // Pobierz pierwsze zdjęcie przypisane do przepisu
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -82,7 +89,6 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
             context.startActivity(intent);
         });
     }
-
 
     @Override
     public int getItemCount() {

@@ -9,21 +9,24 @@ public class Recipe {
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String name;
-    private int preparationTime; // int zamiast String
-    private String description = "";
-    private int imageResourceId; // dla obrazów
 
     @Nullable
-    private String tag; // Jeden tag dla przepisu
+    private Integer preparationTime; // Zmieniono na Integer, aby akceptować null
+
+    private String description = "";
+    private int imageResourceId;
+
+    @Nullable
+    private String tag;
 
     // Konstruktor bezargumentowy (wymagany przez Room)
     public Recipe() {
     }
 
     // Konstruktor
-    public Recipe(String name, int preparationTime, String description, int imageResourceId, String tag) {
+    public Recipe(String name, @Nullable Integer preparationTime, String description, int imageResourceId, String tag) {
         this.name = name != null ? name : "Brak nazwy";
-        this.preparationTime = preparationTime;
+        this.preparationTime = preparationTime; // Może być null
         this.description = description != null ? description : "Brak opisu";
         this.imageResourceId = imageResourceId;
         this.tag = tag != null && !tag.isEmpty() ? tag : null; // Jeśli brak tagu, ustaw na null
@@ -46,11 +49,12 @@ public class Recipe {
         this.name = name != null ? name : "Brak nazwy";
     }
 
-    public int getPreparationTime() {
+    @Nullable
+    public Integer getPreparationTime() {
         return preparationTime;
     }
 
-    public void setPreparationTime(int preparationTime) {
+    public void setPreparationTime(@Nullable Integer preparationTime) {
         this.preparationTime = preparationTime;
     }
 
@@ -70,6 +74,7 @@ public class Recipe {
         this.imageResourceId = imageResourceId;
     }
 
+    @Nullable
     public String getTag() {
         return tag;
     }

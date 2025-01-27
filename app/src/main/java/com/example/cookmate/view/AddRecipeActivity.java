@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 public class AddRecipeActivity extends AppCompatActivity {
+    // Stałe identyfikatory dla kodów żądań
     private static final int GALLERY_REQUEST_CODE = 101;
     private static final int CAMERA_REQUEST_CODE = 102;
     private static final int GALLERY_PERMISSION_CODE = 201;
-    private static final int STORAGE_PERMISSION_CODE = 201;
     private static final int CAMERA_PERMISSION_CODE = 202;
 
     private List<RecipeImage> addedImages = new ArrayList<>();
@@ -46,85 +46,106 @@ public class AddRecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
 
+        // Inicjalizacja elementów interfejsu
         EditText nameInput = findViewById(R.id.recipe_name_input);
         EditText timeInput = findViewById(R.id.recipe_time_input);
         EditText descriptionInput = findViewById(R.id.recipe_description_input);
         EditText tagInput = findViewById(R.id.recipe_tag_input);
         Button saveButton = findViewById(R.id.save_recipe_button);
-
-        // Obsługa przycisków dodawania zdjęć
         Button addGalleryImage = findViewById(R.id.add_gallery_image);
         Button addCameraImage = findViewById(R.id.add_camera_image);
 
+        setupRecyclerView();
+
+        // Obsługa przycisku dodawania zdjęcia z galerii
+        addGalleryImage.setOnClickListener(v -> requestGalleryPermission());
+
+        // Obsługa przycisku robienia zdjęcia aparatem
+        addCameraImage.setOnClickListener(v -> requestCameraPermission());
+
+        // Obsługa przycisku zapisywania przepisu
+        saveButton.setOnClickListener(v -> saveRecipe(nameInput, timeInput, descriptionInput, tagInput));
+    }
+
+    // Konfiguracja RecyclerView do wyświetlania zdjęć
+    private void setupRecyclerView() {
         RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
         imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         imagesAdapter = new RecipeImagesAdapter();
         imagesRecyclerView.setAdapter(imagesAdapter);
+    }
 
-        // Obsługa przycisku do dodawania zdjęcia z galerii
-        addGalleryImage.setOnClickListener(v -> {
-            String permission = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU
-                    ? Manifest.permission.READ_MEDIA_IMAGES
-                    : Manifest.permission.READ_EXTERNAL_STORAGE;
-            if (checkPermission(permission, GALLERY_PERMISSION_CODE)) {
-                openGallery();
-            }
-        });
+    // Obsługa zapisywania przepisu
+    private void saveRecipe(EditText nameInput, EditText timeInput, EditText descriptionInput, EditText tagInput) {
+        String name = nameInput.getText().toString().trim();
+        String description = descriptionInput.getText().toString().trim();
+        String tag = tagInput.getText().toString().trim();
+        Integer time = null; // Domyślna wartość to null
 
-        // Obsługa przycisku do robienia zdjęcia aparatem
-        addCameraImage.setOnClickListener(v -> {
-            if (checkPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)) {
-                openCamera();
-            }
-        });
+        // Walidacja nazwy przepisu
+        if (name.isEmpty()) {
+            Toast.makeText(this, "Nazwa przepisu nie może być pusta!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Listener przycisku zapisu przepisu
-        saveButton.setOnClickListener(v -> {
-            String name = nameInput.getText().toString().trim();
-            String description = descriptionInput.getText().toString().trim();
-            String tag = tagInput.getText().toString().trim();
-            int time;
-
-            if (name.isEmpty()) {
-                Toast.makeText(this, "Nazwa przepisu nie może być pusta!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
+        // Przypisanie czasu, jeśli podano wartość
+        if (!timeInput.getText().toString().trim().isEmpty()) {
             try {
                 time = Integer.parseInt(timeInput.getText().toString().trim());
             } catch (NumberFormatException e) {
                 Toast.makeText(this, "Podaj prawidłowy czas przygotowania!", Toast.LENGTH_SHORT).show();
                 return;
             }
+        }
 
-            if (tag.isEmpty()) {
-                tag = null;
-            }
+        // Ustawienie tagu na null, jeśli jest pusty
+        if (tag.isEmpty()) {
+            tag = null;
+        }
 
-            Recipe recipe = new Recipe(name, time, description, R.drawable.ic_placeholder, tag);
+        // Tworzenie obiektu przepisu i zapis do bazy danych
+        Recipe recipe = new Recipe(name, time, description, R.drawable.ic_placeholder, tag);
+        saveRecipeToDatabase(recipe);
+    }
 
-            Executors.newSingleThreadExecutor().execute(() -> {
-                try {
-                    long recipeId = AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+    // Walidacja danych wejściowych
+    private boolean validateRecipeInput(String name, EditText timeInput) {
+        if (name.isEmpty()) {
+            Toast.makeText(this, "Nazwa przepisu nie może być pusta!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
-                    // Zapisz dodane zdjęcia w bazie danych
-                    for (RecipeImage image : addedImages) {
-                        image.setRecipeId((int) recipeId);
-                        AppDatabase.getInstance(this).recipeImageDao().insertImage(image);
-                    }
+        if (timeInput.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Podaj czas przygotowania!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
 
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Przepis zapisany!", Toast.LENGTH_SHORT).show();
-                        setResult(RESULT_OK);
-                        finish();
-                    });
-                } catch (Exception e) {
-                    runOnUiThread(() -> Toast.makeText(this, "Błąd podczas zapisu przepisu!", Toast.LENGTH_SHORT).show());
+    // Zapisanie przepisu do bazy danych
+    private void saveRecipeToDatabase(Recipe recipe) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                long recipeId = AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+
+                // Zapis zdjęć do bazy danych
+                for (RecipeImage image : addedImages) {
+                    image.setRecipeId((int) recipeId);
+                    AppDatabase.getInstance(this).recipeImageDao().insertImage(image);
                 }
-            });
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Przepis zapisany!", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Błąd podczas zapisu przepisu!", Toast.LENGTH_SHORT).show());
+            }
         });
     }
 
+    // Obsługa wyniku aktywności (galeria/aparat)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -143,6 +164,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         }
     }
 
+    // Zapis zdjęcia do wewnętrznej pamięci
     private Uri savePhotoToInternalStorage(Bitmap photo) {
         File directory = getFilesDir();
         File photoFile = new File(directory, System.currentTimeMillis() + ".jpg");
@@ -154,20 +176,43 @@ public class AddRecipeActivity extends AppCompatActivity {
         return Uri.fromFile(photoFile);
     }
 
-    // Metoda do sprawdzania uprawnień
+    // Żądanie uprawnień do galerii
+    private void requestGalleryPermission() {
+        String permission = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU
+                ? Manifest.permission.READ_MEDIA_IMAGES
+                : Manifest.permission.READ_EXTERNAL_STORAGE;
+        if (checkPermission(permission, GALLERY_PERMISSION_CODE)) {
+            openGallery();
+        }
+    }
+
+    // Żądanie uprawnień do aparatu
+    private void requestCameraPermission() {
+        if (checkPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)) {
+            openCamera();
+        }
+    }
+
+    // Sprawdzenie i żądanie uprawnień
     private boolean checkPermission(String permission, int requestCode) {
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            // W przypadku Androida 13 obsłuż nowe uprawnienie READ_MEDIA_IMAGES
-            if (permission.equals(Manifest.permission.READ_MEDIA_IMAGES)
-                    && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, requestCode);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-            }
+            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
             return false;
         }
+    }
+
+    // Otwarcie galerii
+    private void openGallery() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, GALLERY_REQUEST_CODE);
+    }
+
+    // Otwarcie aparatu
+    private void openCamera() {
+        Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(takePicture, CAMERA_REQUEST_CODE);
     }
 
     // Obsługa wyniku żądania uprawnień
@@ -181,21 +226,7 @@ public class AddRecipeActivity extends AppCompatActivity {
                 openCamera();
             }
         } else {
-            if (requestCode == GALLERY_PERMISSION_CODE) {
-                Toast.makeText(this, "Uprawnienia do odczytu mediów są wymagane!", Toast.LENGTH_SHORT).show();
-            } else if (requestCode == CAMERA_PERMISSION_CODE) {
-                Toast.makeText(this, "Uprawnienia do aparatu są wymagane!", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(this, "Brak wymaganych uprawnień!", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void openGallery() {
-        Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(pickPhoto, GALLERY_REQUEST_CODE);
-    }
-
-    private void openCamera() {
-        Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePicture, CAMERA_REQUEST_CODE);
     }
 }
