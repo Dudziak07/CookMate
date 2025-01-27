@@ -21,6 +21,7 @@ import com.example.cookmate.database.Recipe;
 import com.example.cookmate.database.RecipeImage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -110,6 +111,11 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
             }
             recipes = filteredList;
         }
+        notifyDataSetChanged();
+    }
+
+    public void sortRecipesAlphabetically() {
+        Collections.sort(recipes, (r1, r2) -> r1.getName().compareToIgnoreCase(r2.getName()));
         notifyDataSetChanged();
     }
 

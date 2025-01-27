@@ -159,7 +159,7 @@ public class RecipesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        
+
         // Pobierz SearchView
         SearchView searchView = findViewById(R.id.search_view);
 
@@ -208,5 +208,31 @@ public class RecipesActivity extends AppCompatActivity {
             fabMain.setImageResource(R.drawable.burger_menu); // Zmień ikonę na burger_menu
             isFabOpen = false;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_recipes, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_sort_alphabetically) {
+            sortRecipesAlphabetically();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void sortRecipesAlphabetically() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes(); // Już posortowane w SQL
+            runOnUiThread(() -> {
+                recipes.clear();
+                recipes.addAll(dbRecipes);
+                adapter.notifyDataSetChanged();
+            });
+        });
     }
 }
