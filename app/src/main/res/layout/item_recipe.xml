@@ -17,12 +17,20 @@
         android:padding="8dp">
 
         <!-- Obrazek przepisu -->
-        <ImageView
-            android:id="@+id/recipe_image"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_placeholder" />
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:clipToOutline="true">
+
+            <ImageView
+                android:id="@+id/recipe_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/recipe_image_description" />
+        </androidx.cardview.widget.CardView>
 
         <!-- Nazwa przepisu -->
         <TextView

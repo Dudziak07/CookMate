@@ -1,19 +1,38 @@
 package com.example.cookmate.view;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
+import com.example.cookmate.database.RecipeImage;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 public class AddRecipeActivity extends AppCompatActivity {
+    private static final int GALLERY_REQUEST_CODE = 101;
+    private static final int CAMERA_REQUEST_CODE = 102;
+
+    private List<RecipeImage> addedImages = new ArrayList<>();
+    private RecipeImagesAdapter imagesAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,9 +41,31 @@ public class AddRecipeActivity extends AppCompatActivity {
         EditText nameInput = findViewById(R.id.recipe_name_input);
         EditText timeInput = findViewById(R.id.recipe_time_input);
         EditText descriptionInput = findViewById(R.id.recipe_description_input);
-        EditText tagInput = findViewById(R.id.recipe_tag_input); // Nowe pole tagu
+        EditText tagInput = findViewById(R.id.recipe_tag_input);
         Button saveButton = findViewById(R.id.save_recipe_button);
 
+        // Obsługa przycisków dodawania zdjęć
+        Button addGalleryImage = findViewById(R.id.add_gallery_image);
+        Button addCameraImage = findViewById(R.id.add_camera_image);
+
+        RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
+        imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        imagesAdapter = new RecipeImagesAdapter();
+        imagesRecyclerView.setAdapter(imagesAdapter);
+
+        // Listener do dodawania zdjęcia z galerii
+        addGalleryImage.setOnClickListener(v -> {
+            Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(pickPhoto, GALLERY_REQUEST_CODE);
+        });
+
+        // Listener do robienia zdjęcia aparatem
+        addCameraImage.setOnClickListener(v -> {
+            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(takePicture, CAMERA_REQUEST_CODE);
+        });
+
+        // Listener przycisku zapisu przepisu
         saveButton.setOnClickListener(v -> {
             String name = nameInput.getText().toString().trim();
             String description = descriptionInput.getText().toString().trim();
@@ -43,7 +84,6 @@ public class AddRecipeActivity extends AppCompatActivity {
                 return;
             }
 
-            // Jeśli tag jest pusty, ustaw na null
             if (tag.isEmpty()) {
                 tag = null;
             }
@@ -52,7 +92,14 @@ public class AddRecipeActivity extends AppCompatActivity {
 
             Executors.newSingleThreadExecutor().execute(() -> {
                 try {
-                    AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+                    long recipeId = AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+
+                    // Zapisz dodane zdjęcia w bazie danych
+                    for (RecipeImage image : addedImages) {
+                        image.setRecipeId((int) recipeId);
+                        AppDatabase.getInstance(this).recipeImageDao().insertImage(image);
+                    }
+
                     runOnUiThread(() -> {
                         Toast.makeText(this, "Przepis zapisany!", Toast.LENGTH_SHORT).show();
                         setResult(RESULT_OK);
@@ -63,5 +110,34 @@ public class AddRecipeActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == GALLERY_REQUEST_CODE && data != null) {
+                Uri selectedImage = data.getData();
+                addedImages.add(new RecipeImage(selectedImage.toString(), 0));
+                imagesAdapter.setImages(addedImages);
+            } else if (requestCode == CAMERA_REQUEST_CODE && data != null) {
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+                Uri photoUri = savePhotoToInternalStorage(photo);
+                addedImages.add(new RecipeImage(photoUri.toString(), 0));
+                imagesAdapter.setImages(addedImages);
+            }
+        }
+    }
+
+    private Uri savePhotoToInternalStorage(Bitmap photo) {
+        File directory = getFilesDir();
+        File photoFile = new File(directory, System.currentTimeMillis() + ".jpg");
+        try (FileOutputStream fos = new FileOutputStream(photoFile)) {
+            photo.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Uri.fromFile(photoFile);
     }
 }

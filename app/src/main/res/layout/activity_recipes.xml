@@ -57,8 +57,8 @@
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/search_view"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:background="@color/gray85"
+                android:layout_height="30dp"
+                android:background="@drawable/rounded_background"
                 android:iconifiedByDefault="false"
                 android:queryHint="Szukaj:"
                 app:layout_constraintStart_toEndOf="@id/cookmate_text"
@@ -66,7 +66,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="8dp"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- RecyclerView do wyświetlania przepisów -->

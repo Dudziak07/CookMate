@@ -9,7 +9,7 @@ import java.util.List;
 @Dao
 public interface RecipeDao {
     @Insert
-    void insertRecipe(Recipe recipe); // Deklaracja metody dodającej przepis
+    long insertRecipe(Recipe recipe); // Deklaracja metody dodającej przepis
 
     @Query("SELECT * FROM Recipe") // Wybiera wszystkie przepisy
     List<Recipe> getAllRecipes();

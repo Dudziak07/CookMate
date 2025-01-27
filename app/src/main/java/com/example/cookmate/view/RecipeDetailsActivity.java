@@ -5,9 +5,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
+import com.example.cookmate.database.RecipeImage;
+
+import java.util.List;
 import java.util.concurrent.Executors;
 
 public class RecipeDetailsActivity extends AppCompatActivity {
@@ -52,6 +58,20 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                     }
                 } else {
                     recipeName.setText("Nie znaleziono przepisu");
+                }
+            });
+        });
+
+        RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
+        imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        RecipeImagesAdapter imagesAdapter = new RecipeImagesAdapter();
+        imagesRecyclerView.setAdapter(imagesAdapter);
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<RecipeImage> images = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(recipeId);
+            runOnUiThread(() -> {
+                if (images != null && !images.isEmpty()) {
+                    imagesAdapter.setImages(images);
                 }
             });
         });

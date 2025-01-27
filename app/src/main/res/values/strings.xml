@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CookMate</string>
+    <string name="recipe_image_description">Zdjęcie przepisu</string>
+
 </resources>

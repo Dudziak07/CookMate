@@ -35,4 +35,10 @@
         android:textAppearance="?attr/textAppearanceSubtitle1"
         android:visibility="gone" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/images_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
+
 </LinearLayout>

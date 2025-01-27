@@ -2,6 +2,7 @@ package com.example.cookmate.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.cookmate.R;
+import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
+import com.example.cookmate.database.RecipeImage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeViewHolder> {
     private List<Recipe> recipes;
@@ -42,32 +46,43 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     @Override
     public void onBindViewHolder(@NonNull RecipeViewHolder holder, int position) {
         Recipe recipe = recipes.get(position);
-        Log.d("RecipesAdapter", "Displaying recipe: " + recipe.getName() + ", Tag: " + recipe.getTag());
+        Log.d("RecipesAdapter", "Displaying recipe: " + recipe.getName() +
+                ", ImageResourceId: " + recipe.getImageResourceId() + ", Tag: " + recipe.getTag());
+
         holder.nameTextView.setText(recipe.getName() != null ? recipe.getName() : "Brak nazwy");
         holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
 
-        // Sprawdź, czy tag istnieje
+        // Pobierz pierwsze zdjęcie przypisane do przepisu
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<RecipeImage> images = AppDatabase.getInstance(context).recipeImageDao().getImagesForRecipe(recipe.getId());
+            holder.imageView.post(() -> {
+                if (!images.isEmpty()) {
+                    Glide.with(holder.imageView.getContext())
+                            .load(Uri.parse(images.get(0).getImageUri()))
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(holder.imageView);
+                } else {
+                    holder.imageView.setImageResource(R.drawable.ic_placeholder);
+                }
+            });
+        });
+
+        // Obsługa tagów
         if (recipe.getTag() != null && !recipe.getTag().isEmpty()) {
             holder.tagTextView.setText("#" + recipe.getTag());
             holder.tagTextView.setVisibility(View.VISIBLE);
         } else {
-            holder.tagTextView.setVisibility(View.GONE); // Ukryj tag
+            holder.tagTextView.setVisibility(View.GONE);
         }
 
-        Glide.with(holder.imageView.getContext())
-                .load(recipe.getImageResourceId())
-                .placeholder(R.drawable.ic_placeholder)
-                .into(holder.imageView);
-
+        // Obsługa kliknięcia na przepis
         holder.itemView.setOnClickListener(v -> {
-            if (context instanceof RecipesActivity) {
-                ((RecipesActivity) context).closeFab();
-            }
             Intent intent = new Intent(context, RecipeDetailsActivity.class);
             intent.putExtra("RECIPE_ID", recipe.getId());
             context.startActivity(intent);
         });
     }
+
 
     @Override
     public int getItemCount() {
