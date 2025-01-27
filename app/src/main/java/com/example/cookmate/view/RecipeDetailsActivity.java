@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
+import com.example.cookmate.database.Ingredient;
 import com.example.cookmate.database.Recipe;
 import com.example.cookmate.database.RecipeImage;
 
@@ -47,7 +48,15 @@ public class RecipeDetailsActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (recipe != null) {
                     recipeName.setText(recipe.getName());
-                    recipeTime.setText(recipe.getPreparationTime() + " minut");
+
+                    // Wyświetl czas przygotowania lub ukryj TextView, jeśli preparationTime jest null
+                    if (recipe.getPreparationTime() != null) {
+                        recipeTime.setText(recipe.getPreparationTime() + " minut");
+                        recipeTime.setVisibility(View.VISIBLE);
+                    } else {
+                        recipeTime.setVisibility(View.GONE);
+                    }
+
                     recipeDescription.setText(recipe.getDescription());
 
                     if (recipe.getTag() != null && !recipe.getTag().isEmpty()) {
@@ -72,6 +81,24 @@ public class RecipeDetailsActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (images != null && !images.isEmpty()) {
                     imagesAdapter.setImages(images);
+                }
+            });
+        });
+
+        // Obsługa listy składników
+        RecyclerView ingredientsRecyclerView = findViewById(R.id.ingredients_recycler_view);
+        ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<Ingredient> ingredients = AppDatabase.getInstance(this).ingredientDao().getIngredientsForRecipe(recipeId);
+
+            runOnUiThread(() -> {
+                if (ingredients != null && !ingredients.isEmpty()) {
+                    // Użyj adaptera dla listy z punktorami
+                    IngredientsAdapterForDetails adapter = new IngredientsAdapterForDetails(ingredients);
+                    ingredientsRecyclerView.setAdapter(adapter);
+                } else {
+                    Log.d("RecipeDetailsActivity", "Brak składników dla przepisu ID: " + recipeId);
                 }
             });
         });

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
+import com.example.cookmate.database.Ingredient;
 import com.example.cookmate.database.Recipe;
 import com.example.cookmate.database.RecipeImage;
 
@@ -41,6 +42,8 @@ public class AddRecipeActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST_CODE = 102;
     private static final int GALLERY_PERMISSION_CODE = 201;
     private static final int CAMERA_PERMISSION_CODE = 202;
+
+    private List<Ingredient> ingredientsList = new ArrayList<>();
 
     private List<RecipeImage> addedImages = new ArrayList<>();
     private RecipeImagesAdapter imagesAdapter;
@@ -82,8 +85,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         ingredientUnitSpinner.setAdapter(unitAdapter);
 
         // Lista składników i adapter RecyclerView
-        List<String> ingredientsList = new ArrayList<>();
-        IngredientsAdapter ingredientsAdapter = new IngredientsAdapter(ingredientsList);
+        IngredientsAdapterForAdd ingredientsAdapter = new IngredientsAdapterForAdd(ingredientsList);
         ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         ingredientsRecyclerView.setAdapter(ingredientsAdapter);
 
@@ -98,15 +100,21 @@ public class AddRecipeActivity extends AppCompatActivity {
                 return;
             }
 
-            // Dodanie składnika do listy
-            String ingredient = name + " - " + quantity + " " + unit;
-            ingredientsList.add(ingredient);
-            ingredientsAdapter.notifyDataSetChanged();
+            try {
+                double quantityValue = Double.parseDouble(quantity);
 
-            // Wyczyść pola
-            ingredientNameInput.setText("");
-            ingredientQuantityInput.setText("");
-            ingredientUnitSpinner.setSelection(0);
+                // Tworzenie nowego składnika
+                Ingredient ingredient = new Ingredient(name, quantityValue, unit);
+                ingredientsList.add(ingredient);
+                ingredientsAdapter.notifyDataSetChanged();
+
+                // Czyszczenie pól wejściowych
+                ingredientNameInput.setText("");
+                ingredientQuantityInput.setText("");
+                ingredientUnitSpinner.setSelection(0);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Podaj prawidłową ilość składnika", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Dodaj ItemTouchHelper
@@ -201,6 +209,12 @@ public class AddRecipeActivity extends AppCompatActivity {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 long recipeId = AppDatabase.getInstance(this).recipeDao().insertRecipe(recipe);
+
+                // Zapis składników
+                for (Ingredient ingredient : ingredientsList) { // Używaj globalnej listy ingredientsList
+                    ingredient.setRecipeId((int) recipeId);
+                    AppDatabase.getInstance(this).ingredientDao().insertIngredient(ingredient);
+                }
 
                 // Zapis zdjęć do bazy danych
                 for (RecipeImage image : addedImages) {

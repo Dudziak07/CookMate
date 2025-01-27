@@ -7,19 +7,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cookmate.R;
+import com.example.cookmate.database.Ingredient;
 
 import java.util.Collections;
 import java.util.List;
 
-public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.IngredientViewHolder> {
+public class IngredientsAdapterForAdd extends RecyclerView.Adapter<IngredientsAdapterForAdd.IngredientViewHolder> {
 
-    private List<String> ingredients;
+    private List<Ingredient> ingredients;
 
-    public IngredientsAdapter(List<String> ingredients) {
+    public IngredientsAdapterForAdd(List<Ingredient> ingredients) {
         this.ingredients = ingredients;
     }
 
@@ -27,16 +27,22 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
     @Override
     public IngredientViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_ingredient, parent, false);
+                .inflate(R.layout.item_ingredient_add, parent, false);
         return new IngredientViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull IngredientViewHolder holder, int position) {
-        String ingredient = ingredients.get(position);
-        holder.ingredientText.setText(ingredient);
+        Ingredient ingredient = ingredients.get(position);
 
-        // Usuwanie składnika po kliknięciu na ikonę kosza
+        // Sprawdź, czy ilość jest liczbą całkowitą
+        String quantity = (ingredient.getQuantity() % 1 == 0)
+                ? String.valueOf((int) ingredient.getQuantity()) // Usuń .0
+                : String.valueOf(ingredient.getQuantity());
+
+        holder.ingredientText.setText(ingredient.getName() + " - " + quantity + " " + ingredient.getUnit());
+
+        // Obsługa przycisku usuwania
         holder.deleteButton.setOnClickListener(v -> {
             ingredients.remove(position);
             notifyItemRemoved(position);
@@ -49,7 +55,7 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
         return ingredients.size();
     }
 
-    // Przesuwanie składników
+    // Handle item moving (drag-and-drop)
     public void moveItem(int fromPosition, int toPosition) {
         Collections.swap(ingredients, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
