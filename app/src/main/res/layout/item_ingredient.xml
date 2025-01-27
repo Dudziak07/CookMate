@@ -1,0 +1,27 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Ikona kosza -->
+    <ImageView
+        android:id="@+id/delete_ingredient_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_trash"
+        android:contentDescription="Usuń składnik"
+        android:layout_gravity="center_vertical"
+        android:padding="4dp" />
+
+    <!-- Tekst składnika -->
+    <TextView
+        android:id="@+id/ingredient_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingStart="8dp"
+        android:text="Nazwa składnika"
+        android:textSize="16sp" />
+</LinearLayout>

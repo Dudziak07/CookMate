@@ -29,7 +29,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.AddRecipeActivity" />
+        <activity android:name=".view.AddRecipeActivity"
+            android:theme="@style/CustomTheme" />
         <activity android:name=".view.RecipeDetailsActivity" />
 
         <meta-data

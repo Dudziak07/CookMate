@@ -1,5 +1,18 @@
 <resources>
     <string name="app_name">CookMate</string>
     <string name="recipe_image_description">Zdjęcie przepisu</string>
+    <string name="back">wróć</string>
+    <string name="dodaj_przepis">Dodaj przepis</string>
+
+
+    <string-array name="default_units">
+        <item>porcja</item>
+        <item>g</item>
+        <item>ml</item>
+        <item>łyżeczka</item>
+        <item>łyżka</item>
+        <item>szklanka</item>
+        <item>sztuka</item>
+    </string-array>
 
 </resources>

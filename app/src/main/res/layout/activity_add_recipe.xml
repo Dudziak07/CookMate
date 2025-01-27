@@ -1,58 +1,156 @@
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <EditText
-        android:id="@+id/recipe_name_input"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Nazwa przepisu" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/very_light_green">
 
-    <EditText
-        android:id="@+id/recipe_time_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Czas przygotowania (minuty)"
-        android:inputType="number" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/custom_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_toolbar_background"
+            android:elevation="1dp"
+            android:padding="8dp">
 
-    <EditText
-        android:id="@+id/recipe_description_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Opis przepisu"
-        android:inputType="textMultiLine" />
+            <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_back"
+                android:contentDescription="@string/back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:focusable="true" />
 
-    <EditText
-        android:id="@+id/recipe_tag_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Dodaj tag (opcjonalnie)"
-        android:layout_marginTop="8dp" />
+            <TextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dodaj_przepis"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_medium"
+                android:textSize="20sp"
+                app:layout_constraintStart_toEndOf="@id/back_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <Button
-        android:id="@+id/add_gallery_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Dodaj zdjęcie z galerii" />
+        </com.google.android.material.appbar.MaterialToolbar>
 
-    <Button
-        android:id="@+id/add_camera_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Zrób zdjęcie" />
+        <EditText
+            android:id="@+id/recipe_name_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nazwa przepisu" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/images_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:id="@+id/recipe_time_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Czas przygotowania (minuty)"
+            android:inputType="number" />
 
-    <Button
-        android:id="@+id/save_recipe_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Zapisz"/>
-</LinearLayout>
+        <EditText
+            android:id="@+id/recipe_description_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Opis przepisu"
+            android:inputType="textMultiLine" />
+
+        <EditText
+            android:id="@+id/recipe_tag_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dodaj tag (opcjonalnie)"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- Pole na nazwę składnika -->
+            <EditText
+                android:id="@+id/ingredient_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Podaj nazwę składnika"
+                android:inputType="text" />
+
+            <!-- Pole na ilość składnika -->
+            <EditText
+                android:id="@+id/ingredient_quantity_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Podaj ilość składnika"
+                android:inputType="numberDecimal" />
+
+            <!-- Lista rozwijana z jednostkami -->
+            <Spinner
+                android:id="@+id/ingredient_unit_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:entries="@array/default_units" />
+
+            <!-- Przycisk dodania składnika -->
+            <Button
+                android:id="@+id/add_ingredient_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dodaj składnik" />
+
+            <!-- Lista składników -->
+            <TextView
+                android:id="@+id/ingredients_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lista składników:"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ingredients_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/add_gallery_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dodaj zdjęcie z galerii" />
+
+        <Button
+            android:id="@+id/add_camera_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zrób zdjęcie" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/images_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/save_recipe_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zapisz"/>
+    </LinearLayout>
+</ScrollView>

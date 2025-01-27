@@ -6,8 +6,11 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -16,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,6 +50,13 @@ public class AddRecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        ImageView backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
+
         // Inicjalizacja elementów interfejsu
         EditText nameInput = findViewById(R.id.recipe_name_input);
         EditText timeInput = findViewById(R.id.recipe_time_input);
@@ -56,6 +67,69 @@ public class AddRecipeActivity extends AppCompatActivity {
         Button addCameraImage = findViewById(R.id.add_camera_image);
 
         setupRecyclerView();
+
+        // Pola do dodawania składników
+        EditText ingredientNameInput = findViewById(R.id.ingredient_name_input);
+        EditText ingredientQuantityInput = findViewById(R.id.ingredient_quantity_input);
+        Spinner ingredientUnitSpinner = findViewById(R.id.ingredient_unit_spinner);
+        Button addIngredientButton = findViewById(R.id.add_ingredient_button);
+        RecyclerView ingredientsRecyclerView = findViewById(R.id.ingredients_recycler_view);
+
+        // Ustaw jednostki dla Spinnera
+        ArrayAdapter<CharSequence> unitAdapter = ArrayAdapter.createFromResource(this,
+                R.array.default_units, android.R.layout.simple_spinner_item);
+        unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ingredientUnitSpinner.setAdapter(unitAdapter);
+
+        // Lista składników i adapter RecyclerView
+        List<String> ingredientsList = new ArrayList<>();
+        IngredientsAdapter ingredientsAdapter = new IngredientsAdapter(ingredientsList);
+        ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        ingredientsRecyclerView.setAdapter(ingredientsAdapter);
+
+        // Obsługa przycisku dodawania składników
+        addIngredientButton.setOnClickListener(v -> {
+            String name = ingredientNameInput.getText().toString().trim();
+            String quantity = ingredientQuantityInput.getText().toString().trim();
+            String unit = ingredientUnitSpinner.getSelectedItem().toString();
+
+            if (name.isEmpty() || quantity.isEmpty()) {
+                Toast.makeText(this, "Podaj nazwę i ilość składnika", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Dodanie składnika do listy
+            String ingredient = name + " - " + quantity + " " + unit;
+            ingredientsList.add(ingredient);
+            ingredientsAdapter.notifyDataSetChanged();
+
+            // Wyczyść pola
+            ingredientNameInput.setText("");
+            ingredientQuantityInput.setText("");
+            ingredientUnitSpinner.setSelection(0);
+        });
+
+        // Dodaj ItemTouchHelper
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                ingredientsAdapter.moveItem(fromPosition, toPosition);
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                // Nie obsługujemy gestu przesuwania na bok
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(ingredientsRecyclerView);
 
         // Obsługa przycisku dodawania zdjęcia z galerii
         addGalleryImage.setOnClickListener(v -> requestGalleryPermission());

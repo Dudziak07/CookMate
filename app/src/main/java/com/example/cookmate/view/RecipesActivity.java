@@ -159,6 +159,15 @@ public class RecipesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        
+        // Pobierz SearchView
+        SearchView searchView = findViewById(R.id.search_view);
+
+        // Zamknij SearchView i ukryj klawiaturę
+        if (searchView != null) {
+            searchView.clearFocus(); // Usuwa fokus z SearchView
+        }
+
         Executors.newSingleThreadExecutor().execute(() -> {
             List<Recipe> dbRecipes = AppDatabase.getInstance(this).recipeDao().getAllRecipes();
             runOnUiThread(() -> {
