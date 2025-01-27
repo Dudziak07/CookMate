@@ -1,6 +1,7 @@
 package com.example.cookmate.view;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,9 +9,13 @@ import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.Manifest;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +34,9 @@ import java.util.concurrent.Executors;
 public class AddRecipeActivity extends AppCompatActivity {
     private static final int GALLERY_REQUEST_CODE = 101;
     private static final int CAMERA_REQUEST_CODE = 102;
+    private static final int GALLERY_PERMISSION_CODE = 201;
+    private static final int STORAGE_PERMISSION_CODE = 201;
+    private static final int CAMERA_PERMISSION_CODE = 202;
 
     private List<RecipeImage> addedImages = new ArrayList<>();
     private RecipeImagesAdapter imagesAdapter;
@@ -53,16 +61,21 @@ public class AddRecipeActivity extends AppCompatActivity {
         imagesAdapter = new RecipeImagesAdapter();
         imagesRecyclerView.setAdapter(imagesAdapter);
 
-        // Listener do dodawania zdjęcia z galerii
+        // Obsługa przycisku do dodawania zdjęcia z galerii
         addGalleryImage.setOnClickListener(v -> {
-            Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(pickPhoto, GALLERY_REQUEST_CODE);
+            String permission = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU
+                    ? Manifest.permission.READ_MEDIA_IMAGES
+                    : Manifest.permission.READ_EXTERNAL_STORAGE;
+            if (checkPermission(permission, GALLERY_PERMISSION_CODE)) {
+                openGallery();
+            }
         });
 
-        // Listener do robienia zdjęcia aparatem
+        // Obsługa przycisku do robienia zdjęcia aparatem
         addCameraImage.setOnClickListener(v -> {
-            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(takePicture, CAMERA_REQUEST_CODE);
+            if (checkPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)) {
+                openCamera();
+            }
         });
 
         // Listener przycisku zapisu przepisu
@@ -139,5 +152,50 @@ public class AddRecipeActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return Uri.fromFile(photoFile);
+    }
+
+    // Metoda do sprawdzania uprawnień
+    private boolean checkPermission(String permission, int requestCode) {
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            // W przypadku Androida 13 obsłuż nowe uprawnienie READ_MEDIA_IMAGES
+            if (permission.equals(Manifest.permission.READ_MEDIA_IMAGES)
+                    && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, requestCode);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+            }
+            return false;
+        }
+    }
+
+    // Obsługa wyniku żądania uprawnień
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (requestCode == GALLERY_PERMISSION_CODE) {
+                openGallery();
+            } else if (requestCode == CAMERA_PERMISSION_CODE) {
+                openCamera();
+            }
+        } else {
+            if (requestCode == GALLERY_PERMISSION_CODE) {
+                Toast.makeText(this, "Uprawnienia do odczytu mediów są wymagane!", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == CAMERA_PERMISSION_CODE) {
+                Toast.makeText(this, "Uprawnienia do aparatu są wymagane!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void openGallery() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, GALLERY_REQUEST_CODE);
+    }
+
+    private void openCamera() {
+        Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(takePicture, CAMERA_REQUEST_CODE);
     }
 }
