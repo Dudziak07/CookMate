@@ -6,9 +6,19 @@
     android:padding="8dp">
 
     <TextView
-        android:id="@+id/step_text"
-        android:layout_width="match_parent"
+        android:id="@+id/step_number"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="1."
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingEnd="4dp"/>
+
+    <TextView
+        android:id="@+id/step_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:text="Opis kroku przygotowania"
         android:textSize="16sp" />
 </LinearLayout>

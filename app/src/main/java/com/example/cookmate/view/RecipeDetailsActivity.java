@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Ingredient;
+import com.example.cookmate.database.PreparationStep;
 import com.example.cookmate.database.Recipe;
 import com.example.cookmate.database.RecipeImage;
 
@@ -120,6 +121,24 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                     ingredientsRecyclerView.setAdapter(adapter);
                 } else {
                     Log.d("RecipeDetailsActivity", "Brak składników dla przepisu ID: " + recipeId);
+                }
+            });
+        });
+
+        // Obsługa listy kroków przygotowania
+        RecyclerView stepsRecyclerView = findViewById(R.id.steps_recycler_view);
+        stepsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<PreparationStep> preparationSteps = AppDatabase.getInstance(this)
+                    .preparationStepDao().getStepsForRecipe(recipeId);
+
+            runOnUiThread(() -> {
+                if (preparationSteps != null && !preparationSteps.isEmpty()) {
+                    PreparationStepsAdapterForDetails adapter = new PreparationStepsAdapterForDetails(preparationSteps);
+                    stepsRecyclerView.setAdapter(adapter);
+                } else {
+                    Log.d("RecipeDetailsActivity", "Brak kroków przygotowania dla przepisu ID: " + recipeId);
                 }
             });
         });
