@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -46,6 +47,12 @@ public class AddRecipeActivity extends AppCompatActivity {
     private static final int GALLERY_PERMISSION_CODE = 201;
     private static final int CAMERA_PERMISSION_CODE = 202;
 
+    private int recipeId = -1; // Domyślnie brak przepisu do edycji
+    private EditText nameInput;
+    private EditText timeInput;
+    private EditText descriptionInput;
+    private EditText tagInput;
+
     private List<Ingredient> ingredientsList = new ArrayList<>();
     private List<PreparationStep> preparationStepsList = new ArrayList<>();
     private PreparationStepsAdapterForAdd preparationStepsAdapterForAdd;
@@ -60,18 +67,32 @@ public class AddRecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
 
+        recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
+
+        if (recipeId != -1) {
+            loadRecipeData(recipeId);
+        }
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
+        }
+
+        TextView toolbarTitle = findViewById(R.id.toolbar_title);
+        if (recipeId != -1) {
+            toolbarTitle.setText("Edytuj przepis");
+        } else {
+            toolbarTitle.setText("Dodaj przepis");
         }
 
         ImageView backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
 
         // Inicjalizacja elementów interfejsu
-        EditText nameInput = findViewById(R.id.recipe_name_input);
-        EditText timeInput = findViewById(R.id.recipe_time_input);
-        EditText descriptionInput = findViewById(R.id.recipe_description_input);
-        EditText tagInput = findViewById(R.id.recipe_tag_input);
+        nameInput = findViewById(R.id.recipe_name_input);
+        timeInput = findViewById(R.id.recipe_time_input);
+        descriptionInput = findViewById(R.id.recipe_description_input);
+        tagInput = findViewById(R.id.recipe_tag_input);
+
         Button saveButton = findViewById(R.id.save_recipe_button);
         Button addGalleryImage = findViewById(R.id.add_gallery_image);
         Button addCameraImage = findViewById(R.id.add_camera_image);
@@ -247,7 +268,14 @@ public class AddRecipeActivity extends AppCompatActivity {
 
         // Tworzenie obiektu przepisu i zapis do bazy danych
         Recipe recipe = new Recipe(name, time, description, R.drawable.ic_placeholder, tag);
-        saveRecipeToDatabase(recipe);
+
+        if (recipeId == -1) {
+            // Dodawanie nowego przepisu
+            saveRecipeToDatabase(recipe);
+        } else {
+            // Aktualizacja istniejącego przepisu
+            updateRecipeInDatabase(recipeId, recipe);
+        }
     }
 
     // Walidacja danych wejściowych
@@ -412,6 +440,85 @@ public class AddRecipeActivity extends AppCompatActivity {
                 layoutParams.height = totalHeight > 0 ? totalHeight : 200; // Minimalna wysokość
                 recyclerView.setLayoutParams(layoutParams);
             }
+        });
+    }
+
+    private void loadRecipeData(int recipeId) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            Recipe recipe = AppDatabase.getInstance(this).recipeDao().getRecipeById(recipeId);
+            List<Ingredient> ingredients = AppDatabase.getInstance(this).ingredientDao().getIngredientsForRecipe(recipeId);
+            List<PreparationStep> steps = AppDatabase.getInstance(this).preparationStepDao().getStepsForRecipe(recipeId);
+
+            runOnUiThread(() -> {
+                nameInput.setText(recipe.getName());
+                timeInput.setText(recipe.getPreparationTime() != null ? String.valueOf(recipe.getPreparationTime()) : "");
+                descriptionInput.setText(recipe.getDescription());
+                tagInput.setText(recipe.getTag() != null ? recipe.getTag() : "");
+
+                ingredientsList.clear();
+                ingredientsList.addAll(ingredients);
+                ingredientsAdapter.notifyDataSetChanged();
+
+                preparationStepsList.clear();
+                preparationStepsList.addAll(steps);
+                preparationStepsAdapterForAdd.notifyDataSetChanged();
+
+                // Pobieranie zdjęć z bazy danych
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    List<RecipeImage> imagesFromDB = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(recipeId);
+
+                    runOnUiThread(() -> {
+                        addedImages.clear();
+                        addedImages.addAll(imagesFromDB);
+                        imagesAdapter.setImages(addedImages);
+                    });
+                });
+
+
+                // Aktualizacja wysokości RecyclerView po załadowaniu danych
+                RecyclerView ingredientsRecyclerView = findViewById(R.id.ingredients_recycler_view);
+                setRecyclerViewHeightBasedOnChildren(ingredientsRecyclerView, 5);
+
+                RecyclerView preparationStepsRecyclerView = findViewById(R.id.preparation_steps_recycler_view);
+                setRecyclerViewHeightBasedOnChildren(preparationStepsRecyclerView, 5);
+            });
+        });
+    }
+
+    private void updateRecipeInDatabase(int recipeId, Recipe recipe) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            recipe.setId(recipeId);
+            AppDatabase.getInstance(this).recipeDao().updateRecipe(recipe);
+
+            // Aktualizacja składników
+            AppDatabase.getInstance(this).ingredientDao().deleteIngredientsForRecipe(recipeId);
+            for (Ingredient ingredient : ingredientsList) {
+                ingredient.setRecipeId(recipeId);
+                AppDatabase.getInstance(this).ingredientDao().insertIngredient(ingredient);
+            }
+
+            // Aktualizacja kroków przygotowania
+            AppDatabase.getInstance(this).preparationStepDao().deleteStepsForRecipe(recipeId);
+            for (PreparationStep step : preparationStepsList) {
+                step.setRecipeId(recipeId);
+                AppDatabase.getInstance(this).preparationStepDao().insertStep(step);
+            }
+
+            // Usuwanie starych zdjęć przed zapisaniem nowych
+//            AppDatabase.getInstance(this).recipeImageDao().deleteImagesForRecipe(recipeId);
+
+            // Zapis nowych zdjęć do bazy danych
+            for (RecipeImage image : addedImages) {
+                image.setRecipeId(recipeId);
+                AppDatabase.getInstance(this).recipeImageDao().insertImage(image);
+            }
+
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Przepis zaktualizowany!", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            });
         });
     }
 }

@@ -23,6 +23,15 @@
             app:titleTextColor="@color/black"
             app:navigationIcon="@drawable/ic_back">
 
+            <ImageView
+                android:id="@+id/edit_recipe_button"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_pen_to_square"
+                android:contentDescription="Edytuj przepis"
+                android:layout_marginEnd="16dp"
+                app:tint="@color/mango_tango" />
+
             <!-- Ikona usuwania przepisu -->
             <ImageView
                 android:id="@+id/delete_recipe"

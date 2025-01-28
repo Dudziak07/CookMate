@@ -3,6 +3,7 @@ package com.example.cookmate.database;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -19,4 +20,7 @@ public interface RecipeDao {
 
     @Query("DELETE FROM Recipe WHERE id = :recipeId")
     void deleteRecipeById(int recipeId);
+
+    @Update
+    void updateRecipe(Recipe recipe);
 }

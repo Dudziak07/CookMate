@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 
 public class RecipeDetailsActivity extends AppCompatActivity {
     private int recipeId;
+    private Recipe recipe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +46,29 @@ public class RecipeDetailsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
+        if (recipeId != -1) {
+            Executors.newSingleThreadExecutor().execute(() -> {
+                Recipe loadedRecipe = AppDatabase.getInstance(this).recipeDao().getRecipeById(recipeId);
+                runOnUiThread(() -> {
+                    recipe = loadedRecipe; // Możemy teraz przypisać wartość w wątku UI
+                    updateUI(recipe); // Aktualizacja interfejsu użytkownika
+                });
+            });
+        }
+
         toolbar.setNavigationOnClickListener(v -> {
             Intent intent = new Intent(RecipeDetailsActivity.this, RecipesActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Usuwa wszystkie aktywności nad główną stroną przepisów
             startActivity(intent);
             finish(); // Zamknięcie bieżącej aktywności
+        });
+
+        ImageView editButton = findViewById(R.id.edit_recipe_button);
+        editButton.setOnClickListener(v -> {
+            Intent intent = new Intent(RecipeDetailsActivity.this, AddRecipeActivity.class);
+            intent.putExtra("RECIPE_ID", recipe.getId()); // Przekazujemy ID przepisu
+            startActivity(intent);
         });
 
         ImageView deleteRecipeButton = findViewById(R.id.delete_recipe);
@@ -122,34 +141,33 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
         imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
-// Użyj adaptera RecipeImagesAdapterForDetails
+        // Użyj adaptera RecipeImagesAdapterForDetails
+        final int currentRecipeId = recipeId; // Kopia zmiennej
+
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<RecipeImage> images = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(recipeId);
+            List<RecipeImage> images = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(currentRecipeId);
             runOnUiThread(() -> {
                 if (images != null && !images.isEmpty()) {
                     RecipeImagesAdapterForDetails imagesAdapter = new RecipeImagesAdapterForDetails(images);
                     imagesRecyclerView.setAdapter(imagesAdapter);
                 } else {
-                    Log.d("RecipeDetailsActivity", "Brak zdjęć dla przepisu ID: " + recipeId);
+                    Log.d("RecipeDetailsActivity", "Brak zdjęć dla przepisu ID: " + currentRecipeId);
                 }
             });
         });
-
 
         // Obsługa listy składników
         RecyclerView ingredientsRecyclerView = findViewById(R.id.ingredients_recycler_view);
         ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<Ingredient> ingredients = AppDatabase.getInstance(this).ingredientDao().getIngredientsForRecipe(recipeId);
-
+            List<Ingredient> ingredients = AppDatabase.getInstance(this).ingredientDao().getIngredientsForRecipe(currentRecipeId);
             runOnUiThread(() -> {
                 if (ingredients != null && !ingredients.isEmpty()) {
-                    // Użyj adaptera dla listy z punktorami
                     IngredientsAdapterForDetails adapter = new IngredientsAdapterForDetails(ingredients);
                     ingredientsRecyclerView.setAdapter(adapter);
                 } else {
-                    Log.d("RecipeDetailsActivity", "Brak składników dla przepisu ID: " + recipeId);
+                    Log.d("RecipeDetailsActivity", "Brak składników dla przepisu ID: " + currentRecipeId);
                 }
             });
         });
@@ -160,14 +178,14 @@ public class RecipeDetailsActivity extends AppCompatActivity {
 
         Executors.newSingleThreadExecutor().execute(() -> {
             List<PreparationStep> preparationSteps = AppDatabase.getInstance(this)
-                    .preparationStepDao().getStepsForRecipe(recipeId);
+                    .preparationStepDao().getStepsForRecipe(currentRecipeId);
 
             runOnUiThread(() -> {
                 if (preparationSteps != null && !preparationSteps.isEmpty()) {
                     PreparationStepsAdapterForDetails adapter = new PreparationStepsAdapterForDetails(preparationSteps);
                     stepsRecyclerView.setAdapter(adapter);
                 } else {
-                    Log.d("RecipeDetailsActivity", "Brak kroków przygotowania dla przepisu ID: " + recipeId);
+                    Log.d("RecipeDetailsActivity", "Brak kroków przygotowania dla przepisu ID: " + currentRecipeId);
                 }
             });
         });
@@ -202,5 +220,18 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                 finish(); // Powrót do poprzedniej aktywności
             });
         });
+    }
+
+    private void updateUI(Recipe recipe) {
+        if (recipe == null) {
+            Log.e("RecipeDetailsActivity", "Recipe not found for ID: " + recipeId);
+            return;
+        }
+
+        TextView recipeName = findViewById(R.id.recipe_name);
+        TextView recipeDescription = findViewById(R.id.recipe_description);
+
+        recipeName.setText(recipe.getName());
+        recipeDescription.setText(recipe.getDescription());
     }
 }

@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 @Database(
         entities = {
         Recipe.class, RecipeImage.class, Ingredient.class, PreparationStep.class
-}, version = 8, exportSchema = false)
+}, version = 9, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
 
@@ -30,6 +30,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_2_3)
                             .addMigrations(MIGRATION_4_5)
                             .addMigrations(MIGRATION_6_7)
+                            .addMigrations(MIGRATION_8_9)
                             .fallbackToDestructiveMigration() // Usuwa dane, jeśli migracja zawiedzie (opcjonalne)
                             .build();
                 }
@@ -74,6 +75,25 @@ public abstract class AppDatabase extends RoomDatabase {
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "recipeId INTEGER NOT NULL, " +
                     "stepDescription TEXT, " + // TEXT bez NOT NULL
+                    "FOREIGN KEY(recipeId) REFERENCES Recipe(id) ON DELETE CASCADE)");
+        }
+    };
+
+    static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS Ingredient (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "recipeId INTEGER NOT NULL, " +
+                    "name TEXT NOT NULL, " +
+                    "quantity REAL NOT NULL, " +
+                    "unit TEXT NOT NULL, " +
+                    "FOREIGN KEY(recipeId) REFERENCES Recipe(id) ON DELETE CASCADE)");
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS PreparationStep (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "recipeId INTEGER NOT NULL, " +
+                    "stepDescription TEXT, " +
                     "FOREIGN KEY(recipeId) REFERENCES Recipe(id) ON DELETE CASCADE)");
         }
     };

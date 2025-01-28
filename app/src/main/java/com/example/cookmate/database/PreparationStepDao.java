@@ -18,4 +18,7 @@ public interface PreparationStepDao {
 
     @Query("SELECT * FROM PreparationStep WHERE recipeId = :recipeId")
     List<PreparationStep> getStepsForRecipe(int recipeId);
+
+    @Query("DELETE FROM PreparationStep WHERE recipeId = :recipeId")
+    void deleteStepsForRecipe(int recipeId);
 }

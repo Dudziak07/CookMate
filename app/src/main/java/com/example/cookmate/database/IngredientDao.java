@@ -13,4 +13,7 @@ public interface IngredientDao {
 
     @Query("SELECT * FROM Ingredient WHERE recipeId = :recipeId")
     List<Ingredient> getIngredientsForRecipe(int recipeId);
+
+    @Query("DELETE FROM Ingredient WHERE recipeId = :recipeId")
+    void deleteIngredientsForRecipe(int recipeId);
 }
