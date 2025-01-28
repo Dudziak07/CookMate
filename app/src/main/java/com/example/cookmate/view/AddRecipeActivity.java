@@ -49,7 +49,7 @@ public class AddRecipeActivity extends AppCompatActivity {
     private PreparationStepsAdapterForAdd preparationStepsAdapterForAdd;
 
     private List<RecipeImage> addedImages = new ArrayList<>();
-    private RecipeImagesAdapter imagesAdapter;
+    private RecipeImagesAdapterForAdd imagesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,7 +205,7 @@ public class AddRecipeActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
         imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        imagesAdapter = new RecipeImagesAdapter();
+        imagesAdapter = new RecipeImagesAdapterForAdd();
         imagesRecyclerView.setAdapter(imagesAdapter);
     }
 

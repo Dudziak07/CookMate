@@ -16,4 +16,7 @@ public interface RecipeDao {
 
     @Query("SELECT * FROM Recipe WHERE id = :recipeId") // Wybiera przepis na podstawie ID
     Recipe getRecipeById(int recipeId);
+
+    @Query("DELETE FROM Recipe WHERE id = :recipeId")
+    void deleteRecipeById(int recipeId);
 }

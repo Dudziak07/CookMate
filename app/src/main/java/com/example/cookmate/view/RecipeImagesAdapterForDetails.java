@@ -13,21 +13,19 @@ import com.bumptech.glide.Glide;
 import com.example.cookmate.database.RecipeImage;
 import com.example.cookmate.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class RecipeImagesAdapter extends RecyclerView.Adapter<RecipeImagesAdapter.ImageViewHolder> {
-    private List<RecipeImage> images = new ArrayList<>();
+public class RecipeImagesAdapterForDetails extends RecyclerView.Adapter<RecipeImagesAdapterForDetails.ImageViewHolder> {
+    private List<RecipeImage> images;
 
-    public void setImages(List<RecipeImage> images) {
+    public RecipeImagesAdapterForDetails(List<RecipeImage> images) {
         this.images = images;
-        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image_details, parent, false);
         return new ImageViewHolder(view);
     }
 
@@ -37,19 +35,12 @@ public class RecipeImagesAdapter extends RecyclerView.Adapter<RecipeImagesAdapte
 
         if (image.getImageUri() != null) {
             Glide.with(holder.imageView.getContext())
-                    .load(Uri.parse(image.getImageUri()))
-                    .placeholder(R.drawable.ic_placeholder)
+                    .load(Uri.parse(image.getImageUri())) // Wczytaj URI obrazu
+                    .placeholder(R.drawable.ic_placeholder) // Ustaw placeholder
                     .into(holder.imageView);
         } else {
-            holder.imageView.setImageResource(R.drawable.ic_placeholder);
+            holder.imageView.setImageResource(R.drawable.ic_placeholder); // Domyślny obraz
         }
-
-        // Obsługa usuwania zdjęcia
-        holder.deleteButton.setOnClickListener(v -> {
-            images.remove(position);
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, images.size());
-        });
     }
 
     @Override
@@ -57,15 +48,12 @@ public class RecipeImagesAdapter extends RecyclerView.Adapter<RecipeImagesAdapte
         return images.size();
     }
 
-    // ViewHolder
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
-        ImageView deleteButton;
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.image);
-            deleteButton = itemView.findViewById(R.id.delete_image_button);
         }
     }
 }

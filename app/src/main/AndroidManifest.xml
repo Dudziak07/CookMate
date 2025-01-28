@@ -29,9 +29,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.AddRecipeActivity"
+        <activity
+            android:name=".view.AddRecipeActivity"
             android:theme="@style/CustomTheme" />
-        <activity android:name=".view.RecipeDetailsActivity" />
+        <activity
+            android:name=".view.RecipeDetailsActivity"
+            android:theme="@style/Theme.CookMate" />
 
         <meta-data
             android:name="preloaded_fonts"

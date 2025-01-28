@@ -1,61 +1,90 @@
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:fillViewport="true"
     android:background="@color/sugar_milk">
 
-
-    <TextView
-        android:id="@+id/recipe_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nazwa przepisu"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/recipe_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Czas przygotowania"
-        android:textColor="@color/mango_tango"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/recipe_description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Opis przepisu"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/recipe_tag"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tag"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:visibility="gone" />
-
-    <!-- RecyclerView do wyświetlania zdjęć -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/images_recycler_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- RecyclerView do wyświetlania składników -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/ingredients_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/primary1"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+            android:elevation="4dp"
+            app:title="Szczegóły przepisu"
+            app:titleTextColor="@color/black"
+            app:navigationIcon="@drawable/ic_back">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/steps_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:nestedScrollingEnabled="false"
-        android:layout_marginTop="16dp"/>
-</LinearLayout>
+            <!-- Ikona usuwania przepisu -->
+            <ImageView
+                android:id="@+id/delete_recipe"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/ic_trash"
+                app:tint="@color/light_warning" />
+        </androidx.appcompat.widget.Toolbar>
+
+        <TextView
+            android:id="@+id/recipe_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nazwa przepisu"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/recipe_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Czas przygotowania"
+            android:textColor="@color/mango_tango"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/recipe_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Opis przepisu"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/recipe_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tag"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:visibility="gone" />
+
+        <!-- RecyclerView do wyświetlania zdjęć -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/images_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+        <!-- RecyclerView do wyświetlania składników -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ingredients_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/steps_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+</ScrollView>

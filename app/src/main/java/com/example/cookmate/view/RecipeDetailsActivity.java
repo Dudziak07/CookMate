@@ -1,5 +1,6 @@
 package com.example.cookmate.view;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -8,10 +9,14 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
@@ -24,13 +29,30 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 public class RecipeDetailsActivity extends AppCompatActivity {
+    private int recipeId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_details);
+        invalidateOptionsMenu(); // Wymuszenie odświeżenia menu
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        toolbar.setNavigationOnClickListener(v -> {
+            Intent intent = new Intent(RecipeDetailsActivity.this, RecipesActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Usuwa wszystkie aktywności nad główną stroną przepisów
+            startActivity(intent);
+            finish(); // Zamknięcie bieżącej aktywności
+        });
 
         // Pobierz ID przepisu z Intent
-        int recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
+        recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
         Log.d("RecipeDetailsActivity", "Received recipe ID: " + recipeId);
 
         // Zainicjalizuj widoki
@@ -95,17 +117,20 @@ public class RecipeDetailsActivity extends AppCompatActivity {
 
         RecyclerView imagesRecyclerView = findViewById(R.id.images_recycler_view);
         imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        RecipeImagesAdapter imagesAdapter = new RecipeImagesAdapter();
-        imagesRecyclerView.setAdapter(imagesAdapter);
 
+// Użyj adaptera RecipeImagesAdapterForDetails
         Executors.newSingleThreadExecutor().execute(() -> {
             List<RecipeImage> images = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(recipeId);
             runOnUiThread(() -> {
                 if (images != null && !images.isEmpty()) {
-                    imagesAdapter.setImages(images);
+                    RecipeImagesAdapterForDetails imagesAdapter = new RecipeImagesAdapterForDetails(images);
+                    imagesRecyclerView.setAdapter(imagesAdapter);
+                } else {
+                    Log.d("RecipeDetailsActivity", "Brak zdjęć dla przepisu ID: " + recipeId);
                 }
             });
         });
+
 
         // Obsługa listy składników
         RecyclerView ingredientsRecyclerView = findViewById(R.id.ingredients_recycler_view);
@@ -140,6 +165,34 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                 } else {
                     Log.d("RecipeDetailsActivity", "Brak kroków przygotowania dla przepisu ID: " + recipeId);
                 }
+            });
+        });
+    }
+
+    private void showDeleteConfirmationDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Usuń przepis")
+                .setMessage("Czy na pewno chcesz usunąć przepis?")
+                .setPositiveButton("Tak, usuń", (dialogInterface, which) -> deleteRecipe())
+                .setNegativeButton("Nie, anuluj", (dialogInterface, which) -> dialogInterface.dismiss())
+                .create();
+
+        // Stylizacja przycisków
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(this, R.color.warning));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(this, R.color.gray40));
+        });
+
+        dialog.show();
+    }
+
+    private void deleteRecipe() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            AppDatabase db = AppDatabase.getInstance(this);
+            db.recipeDao().deleteRecipeById(recipeId); // Dodaj odpowiednią metodę w DAO
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Przepis został usunięty", Toast.LENGTH_SHORT).show();
+                finish(); // Powrót do poprzedniej aktywności
             });
         });
     }
