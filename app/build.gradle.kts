@@ -34,6 +34,14 @@ android {
     kotlinOptions {
         jvmTarget = "11" // Zmieniono na 1.8 zamiast 11
     }
+
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/NOTICE.txt")
+    }
 }
 
 dependencies {
@@ -62,4 +70,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.swiperefreshlayout)
 
+    implementation (libs.play.services.auth)
+    implementation (libs.google.api.client.android)
+    implementation (libs.google.api.services.calendar)
 }

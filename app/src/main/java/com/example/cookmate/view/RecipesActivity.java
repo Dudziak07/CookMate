@@ -16,6 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Recipe;
+import com.example.cookmate.utils.GoogleCalendarHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class RecipesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecipesAdapter adapter;
     private List<Recipe> recipes;
-    private boolean isFabOpen = false; // Śledzi, czy FAB jest otwarty
+    private FloatingActionButton fabMain, fabAddRecipe, fabAddToCalendar;
+    private boolean isFabOpen = false; // Status rozwijanego menu
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,33 +36,27 @@ public class RecipesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recipes);
 
         // Znajdź elementy FAB
-        FloatingActionButton fabMain = findViewById(R.id.fab_main);
-        FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+        fabMain = findViewById(R.id.fab_main);
+        fabAddRecipe = findViewById(R.id.fab_add_recipe);
+        fabAddToCalendar = findViewById(R.id.fab_add_to_calendar);
 
-        // Listener głównego przycisku hamburgera
-        fabMain.setOnClickListener(v -> {
-            if (isFabOpen) {
-                // Zamknij FAB i zmień ikonę na burger_menu
-                fabAddRecipe.setVisibility(View.GONE);
-                fabMain.setImageResource(R.drawable.burger_menu); // Ustaw ikonę burger_menu
-                isFabOpen = false;
-            } else {
-                // Otwórz FAB i zmień ikonę na cross
-                fabAddRecipe.setVisibility(View.VISIBLE);
-                fabMain.setImageResource(R.drawable.cross); // Ustaw ikonę cross
-                isFabOpen = true;
-            }
+        // Kliknięcie głównego FAB
+        fabMain.setOnClickListener(v -> toggleFabMenu());
+
+        // Kliknięcie przycisku "Dodaj przepis"
+        fabAddRecipe.setOnClickListener(v -> {
+            Intent intent = new Intent(RecipesActivity.this, AddRecipeActivity.class);
+            startActivity(intent);
+        });
+
+        // Kliknięcie przycisku "Dodaj do Kalendarza"
+        fabAddToCalendar.setOnClickListener(v -> {
+            addEventToCalendar();
         });
 
         // Obsługa kliknięć poza przyciskami
         View mainLayout = findViewById(R.id.main_layout); // Zmieniamy ID głównego layoutu
         mainLayout.setOnClickListener(v -> closeFab());
-
-        // Listener przycisku dodawania przepisu
-        fabAddRecipe.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddRecipeActivity.class);
-            startActivityForResult(intent, 1);
-        });
 
         // Znajdź SwipeRefreshLayout
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -234,5 +230,27 @@ public class RecipesActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             });
         });
+    }
+
+    private void toggleFabMenu() {
+        if (isFabOpen) {
+            fabAddRecipe.setVisibility(View.GONE);
+            fabAddToCalendar.setVisibility(View.GONE);
+            fabMain.setImageResource(R.drawable.burger_menu); // Ustaw ikonę na burger_menu
+            isFabOpen = false;
+        } else {
+            fabAddRecipe.setVisibility(View.VISIBLE);
+            fabAddToCalendar.setVisibility(View.VISIBLE);
+            fabMain.setImageResource(R.drawable.cross); // Ustaw ikonę na krzyżyk
+            isFabOpen = true;
+        }
+    }
+
+    private void addEventToCalendar() {
+        String title = "Przygotowanie dania";
+        String description = "Zaplanuj przygotowanie dania z CookMate";
+        int preparationTime = 70; // np. 70 minut (później można pobierać dynamicznie)
+
+        GoogleCalendarHelper.addEventToGoogleCalendar(this, title, description, preparationTime);
     }
 }
