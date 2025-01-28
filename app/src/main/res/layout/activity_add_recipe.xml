@@ -149,6 +149,13 @@
                 android:text="Dodaj krok przygotowania" />
 
             <!-- Lista kroków przygotowania -->
+            <TextView
+                android:id="@+id/preparation_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lista kroków przygotowania:"
+                android:textStyle="bold" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/preparation_steps_recycler_view"
                 android:layout_width="match_parent"

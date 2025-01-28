@@ -31,7 +31,7 @@ public class PreparationStepsAdapterForDetails extends RecyclerView.Adapter<Prep
         PreparationStep step = steps.get(position);
 
         // Wyświetlenie kroku przygotowania z numeracją
-        holder.stepText.setText(step.getStepDescription());
+        holder.stepText.setText((position + 1) + "." + step.getStepDescription());
     }
 
     @Override
@@ -40,10 +40,11 @@ public class PreparationStepsAdapterForDetails extends RecyclerView.Adapter<Prep
     }
 
     public static class StepViewHolder extends RecyclerView.ViewHolder {
-        TextView stepText;
+        TextView stepNumber, stepText;
 
         public StepViewHolder(@NonNull View itemView) {
             super(itemView);
+            stepNumber = itemView.findViewById(R.id.step_number);
             stepText = itemView.findViewById(R.id.step_text);
         }
     }

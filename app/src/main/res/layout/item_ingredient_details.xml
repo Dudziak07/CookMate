@@ -2,7 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="2dp">
 
     <TextView
         android:id="@+id/ingredient_name"
@@ -10,5 +11,5 @@
         android:layout_height="wrap_content"
         android:lineSpacingExtra="2dp"
         android:text="Nazwa składnika"
-        android:textSize="12sp"/>
+        android:textSize="12dp"/>
 </LinearLayout>

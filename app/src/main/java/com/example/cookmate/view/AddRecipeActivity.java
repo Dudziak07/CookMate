@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -51,6 +53,8 @@ public class AddRecipeActivity extends AppCompatActivity {
     private List<RecipeImage> addedImages = new ArrayList<>();
     private RecipeImagesAdapterForAdd imagesAdapter;
 
+    private IngredientsAdapterForAdd ingredientsAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,7 +92,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         ingredientUnitSpinner.setAdapter(unitAdapter);
 
         // Lista składników i adapter RecyclerView
-        IngredientsAdapterForAdd ingredientsAdapter = new IngredientsAdapterForAdd(ingredientsList);
+        ingredientsAdapter = new IngredientsAdapterForAdd(ingredientsList);
         ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         ingredientsRecyclerView.setAdapter(ingredientsAdapter);
 
@@ -109,7 +113,9 @@ public class AddRecipeActivity extends AppCompatActivity {
                 // Tworzenie nowego składnika
                 Ingredient ingredient = new Ingredient(name, quantityValue, unit);
                 ingredientsList.add(ingredient);
-                ingredientsAdapter.notifyDataSetChanged();
+                ingredientsAdapter.notifyItemInserted(ingredientsList.size() - 1);
+
+                setRecyclerViewHeightBasedOnChildren(ingredientsRecyclerView, 5); // Aktualizacja wysokości
 
                 // Czyszczenie pól wejściowych
                 ingredientNameInput.setText("");
@@ -144,6 +150,8 @@ public class AddRecipeActivity extends AppCompatActivity {
             PreparationStep step = new PreparationStep(stepText);
             preparationStepsList.add(step);
             preparationStepsAdapterForAdd.notifyDataSetChanged(); // Odśwież adapter
+
+            setRecyclerViewHeightBasedOnChildren(preparationStepsRecyclerView, 5); // Aktualizacja wysokości
 
             // Wyczyść pole tekstowe po dodaniu
             preparationStepInput.setText("");
@@ -374,5 +382,36 @@ public class AddRecipeActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Brak wymaganych uprawnień!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setRecyclerViewHeightBasedOnChildren(final RecyclerView recyclerView, int maxVisibleItems) {
+        recyclerView.post(() -> {
+            RecyclerView.Adapter adapter = recyclerView.getAdapter();
+            if (adapter == null) return;
+
+            int totalHeight = 0;
+            int itemCount = adapter.getItemCount();
+            int visibleItems = Math.min(itemCount, maxVisibleItems); // Maksymalnie 5 elementów
+
+            if (itemCount > 0) {
+                RecyclerView.ViewHolder holder = adapter.createViewHolder(recyclerView, 0);
+                View listItem = holder.itemView;
+
+                listItem.measure(
+                        View.MeasureSpec.makeMeasureSpec(recyclerView.getWidth(), View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                );
+
+                int itemHeight = listItem.getMeasuredHeight();
+                totalHeight = itemHeight * visibleItems; // Ustawienie wysokości na max 5 elementów
+            }
+
+            ViewGroup.LayoutParams params = recyclerView.getLayoutParams();
+            if (params instanceof ViewGroup.MarginLayoutParams) {
+                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) params;
+                layoutParams.height = totalHeight > 0 ? totalHeight : 200; // Minimalna wysokość
+                recyclerView.setLayoutParams(layoutParams);
+            }
+        });
     }
 }
