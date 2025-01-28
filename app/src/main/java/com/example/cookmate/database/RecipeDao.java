@@ -11,7 +11,7 @@ public interface RecipeDao {
     @Insert
     long insertRecipe(Recipe recipe); // Deklaracja metody dodającej przepis
 
-    @Query("SELECT * FROM Recipe ORDER BY name ASC") // Wybiera wszystkie przepisy
+    @Query("SELECT * FROM Recipe ORDER BY LOWER(name) ASC") // Wybiera wszystkie przepisy
     List<Recipe> getAllRecipes();
 
     @Query("SELECT * FROM Recipe WHERE id = :recipeId") // Wybiera przepis na podstawie ID
