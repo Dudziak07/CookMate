@@ -127,6 +127,33 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- Pole na opis kroku przygotowania -->
+            <EditText
+                android:id="@+id/preparation_step_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dodaj krok przygotowania"
+                android:inputType="text" />
+
+            <!-- Przycisk dodania kroku -->
+            <Button
+                android:id="@+id/add_preparation_step_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dodaj krok przygotowania" />
+
+            <!-- Lista kroków przygotowania -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/preparation_steps_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/add_gallery_image"

@@ -1,0 +1,26 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Ikona kosza -->
+    <ImageView
+        android:id="@+id/delete_step_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_trash"
+        android:contentDescription="Usuń przygotowanie"
+        android:layout_gravity="center_vertical"
+        android:padding="4dp" />
+
+    <!-- Tekst przygotowania -->
+    <TextView
+        android:id="@+id/step_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Opis kroku przygotowania"
+        android:textSize="16sp" />
+</LinearLayout>

@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Ingredient;
+import com.example.cookmate.database.PreparationStep;
 import com.example.cookmate.database.Recipe;
 import com.example.cookmate.database.RecipeImage;
 
@@ -44,6 +45,8 @@ public class AddRecipeActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_CODE = 202;
 
     private List<Ingredient> ingredientsList = new ArrayList<>();
+    private List<PreparationStep> preparationStepsList = new ArrayList<>();
+    private PreparationStepsAdapterForAdd preparationStepsAdapterForAdd;
 
     private List<RecipeImage> addedImages = new ArrayList<>();
     private RecipeImagesAdapter imagesAdapter;
@@ -117,8 +120,57 @@ public class AddRecipeActivity extends AppCompatActivity {
             }
         });
 
-        // Dodaj ItemTouchHelper
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
+
+
+        // RecyclerView i adapter dla kroków
+        RecyclerView preparationStepsRecyclerView = findViewById(R.id.preparation_steps_recycler_view);
+        preparationStepsAdapterForAdd = new PreparationStepsAdapterForAdd(preparationStepsList);
+        preparationStepsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        preparationStepsRecyclerView.setAdapter(preparationStepsAdapterForAdd);
+
+        // Pobranie referencji do pól wejściowych i przycisku
+        EditText preparationStepInput = findViewById(R.id.preparation_step_input);
+        Button addStepButton = findViewById(R.id.add_preparation_step_button);
+
+        addStepButton.setOnClickListener(v -> {
+            String stepText = preparationStepInput.getText().toString().trim();
+
+            if (stepText.isEmpty()) {
+                Toast.makeText(this, "Podaj opis kroku!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Dodanie nowego kroku do listy
+            PreparationStep step = new PreparationStep(stepText);
+            preparationStepsList.add(step);
+            preparationStepsAdapterForAdd.notifyDataSetChanged(); // Odśwież adapter
+
+            // Wyczyść pole tekstowe po dodaniu
+            preparationStepInput.setText("");
+        });
+
+        ItemTouchHelper preparationStepsTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                preparationStepsAdapterForAdd.moveItem(fromPosition, toPosition);
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                // Nie obsługujemy gestu przesuwania na bok
+            }
+        });
+        preparationStepsTouchHelper.attachToRecyclerView(preparationStepsRecyclerView);
+
+        ItemTouchHelper ingredientsTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
             public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
@@ -137,7 +189,7 @@ public class AddRecipeActivity extends AppCompatActivity {
                 // Nie obsługujemy gestu przesuwania na bok
             }
         });
-        itemTouchHelper.attachToRecyclerView(ingredientsRecyclerView);
+        ingredientsTouchHelper.attachToRecyclerView(ingredientsRecyclerView);
 
         // Obsługa przycisku dodawania zdjęcia z galerii
         addGalleryImage.setOnClickListener(v -> requestGalleryPermission());
@@ -214,6 +266,12 @@ public class AddRecipeActivity extends AppCompatActivity {
                 for (Ingredient ingredient : ingredientsList) { // Używaj globalnej listy ingredientsList
                     ingredient.setRecipeId((int) recipeId);
                     AppDatabase.getInstance(this).ingredientDao().insertIngredient(ingredient);
+                }
+
+                // Zapis kroków przygotowania do bazy danych
+                for (PreparationStep step : preparationStepsList) {
+                    step.setRecipeId((int) recipeId);
+                    AppDatabase.getInstance(this).preparationStepDao().insertStep(step);
                 }
 
                 // Zapis zdjęć do bazy danych
