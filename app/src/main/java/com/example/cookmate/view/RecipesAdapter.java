@@ -2,7 +2,11 @@ package com.example.cookmate.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -54,7 +59,23 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
 
         // Wyświetl czas przygotowania lub ukryj TextView, jeśli preparationTime jest null
         if (recipe.getPreparationTime() != null) {
-            holder.timeTextView.setText(recipe.getPreparationTime() + " minut");
+            SpannableString spannableString = new SpannableString("  " + recipe.getPreparationTime() + " minut");
+
+            // Pobranie ikony zegara
+            Drawable clockIcon = ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.ic_clock);
+            if (clockIcon != null) {
+                int iconSize = (int) (holder.timeTextView.getTextSize()); // Dopasowanie do tekstu
+                clockIcon.setBounds(0, 0, iconSize, iconSize);
+
+                // Zmiana koloru ikony
+                clockIcon.setTint(ContextCompat.getColor(holder.itemView.getContext(), R.color.mango_tango));
+
+                // Tworzymy ImageSpan, który wyrównuje ikonę do środka tekstu
+                ImageSpan imageSpan = new ImageSpan(clockIcon, ImageSpan.ALIGN_BASELINE);
+                spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            }
+
+            holder.timeTextView.setText(spannableString);
             holder.timeTextView.setVisibility(View.VISIBLE);
         } else {
             holder.timeTextView.setVisibility(View.GONE);

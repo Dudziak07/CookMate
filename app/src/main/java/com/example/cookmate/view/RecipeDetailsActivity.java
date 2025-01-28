@@ -1,10 +1,15 @@
 package com.example.cookmate.view;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,7 +56,23 @@ public class RecipeDetailsActivity extends AppCompatActivity {
 
                     // Wyświetl czas przygotowania lub ukryj TextView, jeśli preparationTime jest null
                     if (recipe.getPreparationTime() != null) {
-                        recipeTime.setText(recipe.getPreparationTime() + " minut");
+                        SpannableString spannableString = new SpannableString("  " + recipe.getPreparationTime() + " minut");
+
+                        // Pobranie ikony zegara
+                        Drawable clockIcon = ContextCompat.getDrawable(this, R.drawable.ic_clock);
+                        if (clockIcon != null) {
+                            int iconSize = (int) (recipeTime.getTextSize()); // Dopasowanie do tekstu
+                            clockIcon.setBounds(0, 0, iconSize, iconSize);
+
+                            // Zmiana koloru ikony
+                            clockIcon.setTint(ContextCompat.getColor(this, R.color.mango_tango));
+
+                            // Tworzymy ImageSpan, który wyrównuje ikonę do środka tekstu
+                            ImageSpan imageSpan = new ImageSpan(clockIcon, ImageSpan.ALIGN_BASELINE);
+                            spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                        }
+
+                        recipeTime.setText(spannableString);
                         recipeTime.setVisibility(View.VISIBLE);
                     } else {
                         recipeTime.setVisibility(View.GONE);

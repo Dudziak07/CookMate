@@ -6,9 +6,12 @@
     <color name="purple_500">#6200EE</color>
     <color name="primary_buttons">#2A9D8F</color>
     <color name="primary1">#DFFFE6</color>
+    <color name="gray20">#333333</color>
     <color name="gray40">#666666</color>
     <color name="gray85">#D9D9D9</color>
     <color name="primary_background">#F8F8F8</color>
-    <color name="very_light_green">#EAF4EC</color>
+    <color name="bath_bubbles">#EAF4EC</color>
+    <color name="sugar_milk">#FEF9F3</color>
+    <color name="mango_tango">#FF8C42</color>
 
 </resources>

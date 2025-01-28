@@ -47,9 +47,9 @@
             android:id="@+id/recipe_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="30 minut"
+            android:drawablePadding="4dp"
             android:textSize="14sp"
-            android:textColor="#757575"
+            android:textColor="@color/mango_tango"
             android:layout_marginTop="4dp" />
 
         <TextView

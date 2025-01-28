@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@color/very_light_green">
+        android:background="@color/bath_bubbles">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/custom_toolbar"
@@ -43,12 +43,11 @@
                 android:textStyle="bold"
                 android:fontFamily="@font/poppins_medium"
                 android:textSize="20sp"
-                app:layout_constraintStart_toEndOf="@id/back_button"
+                android:gravity="center"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
-
         </com.google.android.material.appbar.MaterialToolbar>
 
         <EditText
