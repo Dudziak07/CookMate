@@ -8,6 +8,7 @@ import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +51,9 @@ public class RecipeDetailsActivity extends AppCompatActivity {
             startActivity(intent);
             finish(); // Zamknięcie bieżącej aktywności
         });
+
+        ImageView deleteRecipeButton = findViewById(R.id.delete_recipe);
+        deleteRecipeButton.setOnClickListener(v -> showDeleteConfirmationDialog());
 
         // Pobierz ID przepisu z Intent
         recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
@@ -170,14 +174,17 @@ public class RecipeDetailsActivity extends AppCompatActivity {
     }
 
     private void showDeleteConfirmationDialog() {
+        Log.d("RecipeDetailsActivity", "Pokazano dialog usuwania"); // Debug
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Usuń przepis")
                 .setMessage("Czy na pewno chcesz usunąć przepis?")
-                .setPositiveButton("Tak, usuń", (dialogInterface, which) -> deleteRecipe())
+                .setPositiveButton("Tak, usuń", (dialogInterface, which) -> {
+                    Log.d("RecipeDetailsActivity", "Kliknięto TAK w dialogu usuwania"); // Debug
+                    deleteRecipe();
+                })
                 .setNegativeButton("Nie, anuluj", (dialogInterface, which) -> dialogInterface.dismiss())
                 .create();
 
-        // Stylizacja przycisków
         dialog.setOnShowListener(d -> {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(this, R.color.warning));
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(this, R.color.gray40));
