@@ -43,6 +43,13 @@ public class RecipeImagesAdapter extends RecyclerView.Adapter<RecipeImagesAdapte
         } else {
             holder.imageView.setImageResource(R.drawable.ic_placeholder);
         }
+
+        // Obsługa usuwania zdjęcia
+        holder.deleteButton.setOnClickListener(v -> {
+            images.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, images.size());
+        });
     }
 
     @Override
@@ -50,12 +57,15 @@ public class RecipeImagesAdapter extends RecyclerView.Adapter<RecipeImagesAdapte
         return images.size();
     }
 
+    // ViewHolder
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
+        ImageView deleteButton;
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.recipe_image);
+            imageView = itemView.findViewById(R.id.image);
+            deleteButton = itemView.findViewById(R.id.delete_image_button);
         }
     }
 }

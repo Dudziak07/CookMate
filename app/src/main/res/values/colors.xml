@@ -13,5 +13,7 @@
     <color name="bath_bubbles">#EAF4EC</color>
     <color name="sugar_milk">#FEF9F3</color>
     <color name="mango_tango">#FF8C42</color>
+    <color name="warning">#D64545</color>
+    <color name="light_warning">#e9827c</color>
 
 </resources>
