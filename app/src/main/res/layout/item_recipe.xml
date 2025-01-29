@@ -47,6 +47,7 @@
             android:layout_height="wrap_content"
             android:text="Przepis"
             android:textSize="16sp"
+            android:textColor="@color/gray20"
             android:textStyle="bold"
             android:layout_marginTop="8dp" />
 
@@ -66,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textSize="12sp"
-            android:textColor="@color/black"
+            android:textColor="@color/gray40"
             android:visibility="gone" /> <!-- Ukryte domyślnie -->
 
     </LinearLayout>

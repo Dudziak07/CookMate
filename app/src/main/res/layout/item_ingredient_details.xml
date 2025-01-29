@@ -11,5 +11,6 @@
         android:layout_height="wrap_content"
         android:lineSpacingExtra="2dp"
         android:text="Nazwa składnika"
-        android:textSize="12dp"/>
+        android:textSize="12dp"
+        android:textColor="@color/gray40"/>
 </LinearLayout>
