@@ -1,14 +1,27 @@
 package com.example.cookmate.view;
 
+import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
+import android.Manifest;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView; // Dodaj import SearchView
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -19,9 +32,22 @@ import com.example.cookmate.database.Recipe;
 import com.example.cookmate.utils.GoogleCalendarHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Event;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class RecipesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -29,11 +55,39 @@ public class RecipesActivity extends AppCompatActivity {
     private List<Recipe> recipes;
     private FloatingActionButton fabMain, fabAddRecipe, fabAddToCalendar;
     private boolean isFabOpen = false; // Status rozwijanego menu
+    private boolean isSelectionMode = false;
+
+    private GoogleAccountCredential credential;
+    private GoogleCalendarHelper googleCalendarHelper;
+    private static final int REQUEST_ACCOUNT_PICKER = 1000;
+    private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final int REQUEST_AUTHORIZATION = 1001;
+    private static final String TAG = "RecipesActivity";
+    private static final String CALENDAR_ID = "primary";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipes);
+
+        // Inicjalizacja Google API
+        credential = GoogleAccountCredential.usingOAuth2(
+                        this, Collections.singleton(CalendarScopes.CALENDAR))
+                .setBackOff(new ExponentialBackOff());
+
+        googleCalendarHelper = new GoogleCalendarHelper(this, credential);
+
+        // Sprawdź, czy mamy już wybrane konto Google
+        String accountName = getPreferences(MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
+        if (accountName != null) {
+            credential.setSelectedAccountName(accountName);
+            Log.d("RecipesActivity", "Załadowano zapisane konto: " + accountName);
+        } else {
+            Log.d("RecipesActivity", "Nie wybrano jeszcze konta Google.");
+            chooseGoogleAccount();
+        }
+
+        requestCalendarPermissions();
 
         // Znajdź elementy FAB
         fabMain = findViewById(R.id.fab_main);
@@ -51,7 +105,23 @@ public class RecipesActivity extends AppCompatActivity {
 
         // Kliknięcie przycisku "Dodaj do Kalendarza"
         fabAddToCalendar.setOnClickListener(v -> {
-            addEventToCalendar();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR}, 200);
+            } else {
+                if (!isSelectionMode) {
+                    isSelectionMode = true;
+                    adapter.toggleSelectionMode();
+                    fabAddToCalendar.setImageResource(R.drawable.ic_check);
+                } else {
+                    List<Recipe> selectedRecipes = adapter.getSelectedRecipes();
+                    Log.d("CalendarDebug", "Liczba wybranych przepisów: " + selectedRecipes.size());
+                    if (selectedRecipes.isEmpty()) {
+                        Toast.makeText(this, "Wybierz co najmniej jeden przepis!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    showDateTimePicker();
+                }
+            }
         });
 
         // Obsługa kliknięć poza przyciskami
@@ -190,6 +260,16 @@ public class RecipesActivity extends AppCompatActivity {
                 });
             });
 
+            if (requestCode == REQUEST_AUTHORIZATION) {
+                if (resultCode == RESULT_OK) {
+                    Log.d(TAG, "✅ Użytkownik przyznał dostęp do kalendarza.");
+                    Toast.makeText(this, "Uprawnienia do kalendarza zatwierdzone! Spróbuj ponownie dodać wydarzenie.", Toast.LENGTH_LONG).show();
+                } else {
+                    Log.e(TAG, "❌ Użytkownik odmówił dostępu do kalendarza.");
+                    Toast.makeText(this, "Nie przyznano uprawnień do kalendarza!", Toast.LENGTH_LONG).show();
+                }
+            }
+
             // Zamknij hamburger, jeśli jest otwarty
             FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
             fabAddRecipe.setVisibility(View.GONE);
@@ -246,11 +326,139 @@ public class RecipesActivity extends AppCompatActivity {
         }
     }
 
-    private void addEventToCalendar() {
-        String title = "Przygotowanie dania";
-        String description = "Zaplanuj przygotowanie dania z CookMate";
-        int preparationTime = 70; // np. 70 minut (później można pobierać dynamicznie)
+    @SuppressLint("StaticFieldLeak")
+    public void addEventToGoogleCalendar(String title, String description, Date startTime, int durationMinutes) {
+        new AsyncTask<Void, Void, String>() {
+            private Exception error; // Dodaj to
 
-        GoogleCalendarHelper.addEventToGoogleCalendar(this, title, description, preparationTime);
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    Event event = new Event()
+                            .setSummary(title)
+                            .setDescription(description);
+
+                    Date endTime = new Date(startTime.getTime() + (durationMinutes * 60 * 1000));
+
+                    EventDateTime startDateTime = new EventDateTime()
+                            .setDateTime(new com.google.api.client.util.DateTime(startTime))
+                            .setTimeZone(TimeZone.getDefault().getID());
+
+                    EventDateTime endDateTime = new EventDateTime()
+                            .setDateTime(new com.google.api.client.util.DateTime(endTime))
+                            .setTimeZone(TimeZone.getDefault().getID());
+
+                    event.setStart(startDateTime);
+                    event.setEnd(endDateTime);
+
+                    Log.d(TAG, "🔹 Tworzenie wydarzenia: " + event.toString());
+
+                    Event addedEvent = googleCalendarHelper.addEventToGoogleCalendar(
+                            event.getSummary(),
+                            event.getDescription(),
+                            new Date(event.getStart().getDateTime().getValue()),
+                            (int) ((event.getEnd().getDateTime().getValue() - event.getStart().getDateTime().getValue()) / 60000)
+                    );
+
+                    if (addedEvent != null && addedEvent.getId() != null) {
+                        Log.d(TAG, "✅ Wydarzenie dodane: " + addedEvent.getHtmlLink());
+                        return "Wydarzenie dodane: " + addedEvent.getHtmlLink();
+                    } else {
+                        Log.e(TAG, "❌ Błąd dodawania wydarzenia.");
+                        return "Błąd dodawania wydarzenia";
+                    }
+
+                } catch (UserRecoverableAuthIOException e) {
+                    error = e; // Zapisujemy wyjątek do obsługi w onPostExecute()
+                    return "Wymagana autoryzacja Google";
+                } catch (Exception e) {
+                    Log.e(TAG, "❌ Wystąpił błąd podczas dodawania wydarzenia", e);
+                    return "Błąd: " + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                if (error instanceof UserRecoverableAuthIOException) {
+                    Log.e(TAG, "⚠ Wymagana zgoda użytkownika na dostęp do kalendarza.");
+                    UserRecoverableAuthIOException authException = (UserRecoverableAuthIOException) error;
+                    Intent consentIntent = authException.getIntent();
+                    ((Activity) RecipesActivity.this).startActivityForResult(consentIntent, REQUEST_AUTHORIZATION);
+                } else {
+                    Toast.makeText(RecipesActivity.this, result, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Wynik dodawania wydarzenia: " + result);
+                }
+            }
+        }.execute();
+    }
+
+
+    private void showDateTimePicker() {
+        final Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, (view1, hourOfDay, minute) -> {
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calendar.set(Calendar.MINUTE, minute);
+                for (Recipe recipe : adapter.getSelectedRecipes()) {
+                    addEventToGoogleCalendar(recipe.getName(), "Przepis z CookMate: " + recipe.getDescription(), calendar.getTime(), recipe.getPreparationTime());
+                }
+            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+
+            timePickerDialog.show();
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+
+        datePickerDialog.show();
+    }
+
+    private final ActivityResultLauncher<Intent> accountPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String accountName = result.getData().getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    if (accountName != null) {
+                        credential.setSelectedAccountName(accountName);
+                        getPreferences(MODE_PRIVATE).edit().putString(PREF_ACCOUNT_NAME, accountName).apply();
+                        Log.d("RecipesActivity", "Wybrano konto Google: " + accountName);
+                        Toast.makeText(this, "Wybrano konto: " + accountName, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("RecipesActivity", "Nie udało się pobrać nazwy konta.");
+                    }
+                } else {
+                    Log.e("RecipesActivity", "Użytkownik anulował wybór konta.");
+                    Toast.makeText(this, "Musisz wybrać konto Google!", Toast.LENGTH_LONG).show();
+                }
+            });
+
+    private void chooseGoogleAccount() {
+        Intent intent = credential.newChooseAccountIntent();
+        accountPickerLauncher.launch(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 200) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Uprawnienia przyznane!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Brak wymaganych uprawnień do kalendarza!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void requestCalendarPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.GET_ACCOUNTS,
+                    Manifest.permission.WRITE_CALENDAR,
+                    Manifest.permission.READ_CALENDAR
+            }, 200);
+        }
     }
 }

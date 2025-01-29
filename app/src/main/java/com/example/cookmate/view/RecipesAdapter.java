@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.CheckBox;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -29,11 +30,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.Calendar;
 
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeViewHolder> {
     private List<Recipe> recipes;
     private List<Recipe> originalRecipes;
     private Context context;
+
+    private boolean isSelectionMode = false;
+    private List<Recipe> selectedRecipes = new ArrayList<>();
 
     public RecipesAdapter(Context context, List<Recipe> recipes) {
         this.context = context;
@@ -57,20 +62,14 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
 
         holder.nameTextView.setText(recipe.getName() != null ? recipe.getName() : "Brak nazwy");
 
-        // Wyświetl czas przygotowania lub ukryj TextView, jeśli preparationTime jest null
+        // Ustawianie czasu przygotowania
         if (recipe.getPreparationTime() != null) {
             SpannableString spannableString = new SpannableString("  " + recipe.getPreparationTime() + " minut");
-
-            // Pobranie ikony zegara
             Drawable clockIcon = ContextCompat.getDrawable(holder.itemView.getContext(), R.drawable.ic_clock);
             if (clockIcon != null) {
-                int iconSize = (int) (holder.timeTextView.getTextSize()); // Dopasowanie do tekstu
+                int iconSize = (int) (holder.timeTextView.getTextSize());
                 clockIcon.setBounds(0, 0, iconSize, iconSize);
-
-                // Zmiana koloru ikony
                 clockIcon.setTint(ContextCompat.getColor(holder.itemView.getContext(), R.color.mango_tango));
-
-                // Tworzymy ImageSpan, który wyrównuje ikonę do środka tekstu
                 ImageSpan imageSpan = new ImageSpan(clockIcon, ImageSpan.ALIGN_BASELINE);
                 spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             }
@@ -80,6 +79,25 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
         } else {
             holder.timeTextView.setVisibility(View.GONE);
         }
+
+        // Ustawienie widoczności checkboxa
+        holder.checkBox.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        holder.checkBox.setChecked(selectedRecipes.contains(recipe));
+
+        // Poprawiona obsługa checkboxa - działa nawet jak RecyclerView recyklinguje widoki
+        holder.checkBox.setOnCheckedChangeListener(null); // Usuń stary listener, aby uniknąć błędów
+        holder.checkBox.setChecked(selectedRecipes.contains(recipe));
+
+        holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (!selectedRecipes.contains(recipe)) {
+                    selectedRecipes.add(recipe);
+                }
+            } else {
+                selectedRecipes.remove(recipe);
+            }
+            Log.d("RecipesAdapter", "Selected Recipes: " + selectedRecipes.size());
+        });
 
         // Pobierz pierwsze zdjęcie przypisane do przepisu
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -104,11 +122,13 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
             holder.tagTextView.setVisibility(View.GONE);
         }
 
-        // Obsługa kliknięcia na przepis
+        // Obsługa kliknięcia na przepis (ale tylko jeśli nie jest w trybie wyboru!)
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, RecipeDetailsActivity.class);
-            intent.putExtra("RECIPE_ID", recipe.getId());
-            context.startActivity(intent);
+            if (!isSelectionMode) {
+                Intent intent = new Intent(context, RecipeDetailsActivity.class);
+                intent.putExtra("RECIPE_ID", recipe.getId());
+                context.startActivity(intent);
+            }
         });
     }
 
@@ -143,15 +163,27 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.RecipeVi
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView;
         TextView timeTextView;
-        TextView tagTextView; // Dodano tagTextView
+        TextView tagTextView;
         ImageView imageView;
+        CheckBox checkBox; // Dodaj to pole
 
         public RecipeViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.recipe_name);
             timeTextView = itemView.findViewById(R.id.recipe_time);
-            tagTextView = itemView.findViewById(R.id.recipe_tag); // Inicjalizacja tagTextView
+            tagTextView = itemView.findViewById(R.id.recipe_tag);
             imageView = itemView.findViewById(R.id.recipe_image);
+            checkBox = itemView.findViewById(R.id.recipe_checkbox); // Dodaj to
         }
+    }
+
+    public void toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode;
+        selectedRecipes.clear();
+        notifyDataSetChanged();
+    }
+
+    public List<Recipe> getSelectedRecipes() {
+        return new ArrayList<>(selectedRecipes);
     }
 }
