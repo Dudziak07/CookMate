@@ -5,6 +5,7 @@
 
     <color name="purple_500">#6200EE</color>
     <color name="primary_buttons">#2A9D8F</color>
+    <color name="secondary_buttons">#E8DCC0</color>
     <color name="primary1">#DFFFE6</color>
     <color name="gray20">#333333</color>
     <color name="gray40">#666666</color>

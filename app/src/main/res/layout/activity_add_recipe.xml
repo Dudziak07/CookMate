@@ -54,28 +54,35 @@
             android:id="@+id/recipe_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nazwa przepisu" />
+            android:hint="Nazwa przepisu"
+            android:layout_marginTop="8dp"
+            style="@style/RoundedEditText"/>
 
         <EditText
             android:id="@+id/recipe_time_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Czas przygotowania (minuty)"
-            android:inputType="number" />
+            android:layout_marginTop="4dp"
+            android:inputType="number"
+            style="@style/RoundedEditText"/>
 
         <EditText
             android:id="@+id/recipe_description_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Opis przepisu"
-            android:inputType="textMultiLine" />
+            android:layout_marginTop="4dp"
+            android:inputType="textMultiLine"
+            style="@style/RoundedEditText"/>
 
         <EditText
             android:id="@+id/recipe_tag_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Dodaj tag (opcjonalnie)"
-            android:layout_marginTop="8dp" />
+            android:hint="Dodaj tag"
+            android:layout_marginTop="4dp"
+            style="@style/RoundedEditText"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -89,7 +96,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Podaj nazwę składnika"
-                android:inputType="text" />
+                android:inputType="text"
+                style="@style/RoundedEditText"/>
 
             <!-- Pole na ilość składnika -->
             <EditText
@@ -97,7 +105,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Podaj ilość składnika"
-                android:inputType="numberDecimal" />
+                android:inputType="numberDecimal"
+                style="@style/RoundedEditText"/>
 
             <!-- Lista rozwijana z jednostkami -->
             <Spinner
@@ -111,7 +120,11 @@
                 android:id="@+id/add_ingredient_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dodaj składnik" />
+                android:text="Dodaj składnik"
+                android:textColor="@color/gray20"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                style="@style/RoundedButton_secondary"/>
 
             <!-- Lista składników -->
             <TextView
@@ -139,14 +152,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Dodaj krok przygotowania"
-                android:inputType="text" />
+                android:inputType="text"
+                style="@style/RoundedEditText"/>
 
             <!-- Przycisk dodania kroku -->
             <Button
                 android:id="@+id/add_preparation_step_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dodaj krok przygotowania" />
+                android:text="Dodaj krok przygotowania"
+                android:textColor="@color/gray20"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                style="@style/RoundedButton_secondary"/>
 
             <!-- Lista kroków przygotowania -->
             <TextView
@@ -162,28 +180,51 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/add_gallery_image"
-            android:layout_width="wrap_content"
+        <!-- Sekcja przycisków dodawania zdjęć -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dodaj zdjęcie z galerii" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="8dp">
 
-        <Button
-            android:id="@+id/add_camera_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zrób zdjęcie" />
+            <Button
+                android:id="@+id/add_gallery_image"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Dodaj zdjęcie z galerii"
+                android:textColor="@color/gray20"
+                style="@style/RoundedButton_secondary"/>
 
+            <View
+                android:layout_width="8dp"
+                android:layout_height="match_parent"/>
+
+            <Button
+                android:id="@+id/add_camera_image"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Zrób zdjęcie"
+                android:textColor="@color/gray20"
+                style="@style/RoundedButton_secondary"/>
+        </LinearLayout>
+
+        <!-- RecyclerView do podglądu zdjęć -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/images_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
 
+        <!-- Przycisk zapisu na pełną szerokość -->
         <Button
             android:id="@+id/save_recipe_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zapisz"/>
+            android:text="Zapisz"
+            style="@style/RoundedButton_primary"/>
     </LinearLayout>
 </ScrollView>
