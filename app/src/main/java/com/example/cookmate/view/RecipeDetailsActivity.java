@@ -2,6 +2,7 @@ package com.example.cookmate.view;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
+import com.bumptech.glide.Glide;
 import com.example.cookmate.R;
 import com.example.cookmate.database.AppDatabase;
 import com.example.cookmate.database.Ingredient;
@@ -39,12 +41,10 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_recipe_details);
         invalidateOptionsMenu(); // Wymuszenie odświeżenia menu
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        ImageView backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            finish(); // Po prostu zamyka aktywność i wraca do poprzedniej
+        });
 
         recipeId = getIntent().getIntExtra("RECIPE_ID", -1);
         if (recipeId != -1) {
@@ -56,13 +56,6 @@ public class RecipeDetailsActivity extends AppCompatActivity {
                 });
             });
         }
-
-        toolbar.setNavigationOnClickListener(v -> {
-            Intent intent = new Intent(RecipeDetailsActivity.this, RecipesActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Usuwa wszystkie aktywności nad główną stroną przepisów
-            startActivity(intent);
-            finish(); // Zamknięcie bieżącej aktywności
-        });
 
         ImageView editButton = findViewById(R.id.edit_recipe_button);
         editButton.setOnClickListener(v -> {
@@ -229,9 +222,34 @@ public class RecipeDetailsActivity extends AppCompatActivity {
         }
 
         TextView recipeName = findViewById(R.id.recipe_name);
+        TextView recipeTime = findViewById(R.id.recipe_time);
         TextView recipeDescription = findViewById(R.id.recipe_description);
+        ImageView recipeImage = findViewById(R.id.recipe_image);
 
         recipeName.setText(recipe.getName());
         recipeDescription.setText(recipe.getDescription());
+
+        // Wyświetlanie czasu przygotowania
+        if (recipe.getPreparationTime() != null) {
+            recipeTime.setText("⏱ " + recipe.getPreparationTime() + " minut");
+        } else {
+            recipeTime.setVisibility(View.GONE);
+        }
+
+        // Pobieranie zdjęcia
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<RecipeImage> images = AppDatabase.getInstance(this).recipeImageDao().getImagesForRecipe(recipe.getId());
+            runOnUiThread(() -> {
+                if (!images.isEmpty()) {
+                    Glide.with(this)
+                            .load(Uri.parse(images.get(0).getImageUri()))
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(recipeImage);
+                } else {
+                    recipeImage.setImageResource(R.drawable.ic_placeholder);
+                }
+            });
+        });
     }
+
 }
