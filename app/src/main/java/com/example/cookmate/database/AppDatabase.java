@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 @Database(
         entities = {
         Recipe.class, RecipeImage.class, Ingredient.class, PreparationStep.class
-}, version = 9, exportSchema = false)
+}, version = 10, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
 
@@ -31,7 +31,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             .addMigrations(MIGRATION_4_5)
                             .addMigrations(MIGRATION_6_7)
                             .addMigrations(MIGRATION_8_9)
-                            .fallbackToDestructiveMigration() // Usuwa dane, jeśli migracja zawiedzie (opcjonalne)
+                            .addMigrations(MIGRATION_9_10)
+                            .fallbackToDestructiveMigration() // Opcjonalne - usuwa dane, jeśli migracja nie powiedzie się
                             .build();
                 }
             }
@@ -95,6 +96,14 @@ public abstract class AppDatabase extends RoomDatabase {
                     "recipeId INTEGER NOT NULL, " +
                     "stepDescription TEXT, " +
                     "FOREIGN KEY(recipeId) REFERENCES Recipe(id) ON DELETE CASCADE)");
+        }
+    };
+
+    static final Migration MIGRATION_9_10 = new Migration(9, 10) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Dodanie kolumny imagePath do tabeli Recipe
+            database.execSQL("ALTER TABLE Recipe ADD COLUMN imagePath TEXT");
         }
     };
 }

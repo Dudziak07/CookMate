@@ -19,6 +19,9 @@ public class Recipe {
     @Nullable
     private String tag;
 
+    @Nullable
+    private String imagePath; // Nowe pole do przechowywania ścieżki obrazu
+
     // Konstruktor bezargumentowy (wymagany przez Room)
     public Recipe() {
     }
@@ -30,6 +33,7 @@ public class Recipe {
         this.description = description != null ? description : "Brak opisu";
         this.imageResourceId = imageResourceId;
         this.tag = tag != null && !tag.isEmpty() ? tag : null; // Jeśli brak tagu, ustaw na null
+        this.imagePath = imagePath; // Ścieżka do obrazu
     }
 
     // Gettery i settery
@@ -81,5 +85,14 @@ public class Recipe {
 
     public void setTag(@Nullable String tag) {
         this.tag = tag;
+    }
+
+    @Nullable
+    public String getImagePath() { // Getter do ścieżki obrazu
+        return imagePath;
+    }
+
+    public void setImagePath(@Nullable String imagePath) { // Setter do ścieżki obrazu
+        this.imagePath = imagePath;
     }
 }
