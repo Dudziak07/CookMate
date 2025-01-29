@@ -7,12 +7,15 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -239,6 +242,20 @@ public class RecipesActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+
+        // Zmień kolor tekstu
+        searchEditText.setTextColor(ContextCompat.getColor(this, R.color.black));
+
+
+        // Zmiana koloru ikonki wyszukiwania
+        ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
+        searchIcon.setColorFilter(ContextCompat.getColor(this, R.color.primary1));
+
+        // Zmiana koloru linii podkreślenia (jeśli jest)
+        View underline = searchView.findViewById(androidx.appcompat.R.id.search_plate);
+        underline.setBackgroundColor(Color.TRANSPARENT);
 
         searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
