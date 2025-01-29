@@ -93,6 +93,7 @@ public class RecipesActivity extends AppCompatActivity {
         fabMain = findViewById(R.id.fab_main);
         fabAddRecipe = findViewById(R.id.fab_add_recipe);
         fabAddToCalendar = findViewById(R.id.fab_add_to_calendar);
+        fabAddToCalendar.setImageDrawable(getDrawable(R.drawable.google_calendar_icon));
 
         // Kliknięcie głównego FAB
         fabMain.setOnClickListener(v -> toggleFabMenu());
@@ -279,8 +280,10 @@ public class RecipesActivity extends AppCompatActivity {
     public void closeFab() {
         FloatingActionButton fabMain = findViewById(R.id.fab_main);
         FloatingActionButton fabAddRecipe = findViewById(R.id.fab_add_recipe);
+        fabAddToCalendar = findViewById(R.id.fab_add_to_calendar);
         if (isFabOpen) {
             fabAddRecipe.setVisibility(View.GONE);
+            fabAddToCalendar.setVisibility(View.GONE);
             fabMain.setImageResource(R.drawable.burger_menu); // Zmień ikonę na burger_menu
             isFabOpen = false;
         }

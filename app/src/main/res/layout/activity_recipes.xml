@@ -113,7 +113,7 @@
             android:id="@+id/fab_add_to_calendar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/google_calendar_icon"
+            android:src="@drawable/google_calendar_icon"
             app:backgroundTint="@color/primary_buttons"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
